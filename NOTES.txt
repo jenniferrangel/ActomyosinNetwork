@@ -1,0 +1,2 @@
+For now, we will define all parameters in main.cpp and externs.h
+Once parameters are calibrated or we won't change them, we can move them to params.h 
