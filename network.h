@@ -23,6 +23,29 @@
 //=========================
 // Network Class Declaration
 
+//class Network: public enable_shared_from_this<Network> {
+class Network{
+    private:
+        //vector<shared_ptr<Filament>> filaments;
+
+        int num_filaments;
+        mt19937 gen;
+
+    public:
+        //Constructor:
+        Network(string filename, mt19937 gen);
+
+        //Getters & setters
+        int get_num_filaments(){return num_filaments;}
+        mt19937 get_Random_Generator(){return gen;}
+
+        //Functions
+
+        //Destructor
+	    ~Network();
+
+};
+
 //===========================
 //End of file
 

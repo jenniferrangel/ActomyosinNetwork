@@ -60,10 +60,16 @@ double dt = 0.0005;                     //time step (seconds)
 
 int main(){
 
-    cout << "Hello I am in main" << endl;
-    cout << "My Boltz constant is: " << kB << endl;
-    cout << "My theta is: " << THETA_EQUI_ANGLE << endl;
-    cout << "Pi is: " << acos(-1.0) << endl;
+    //cout << "Hello I am in main" << endl;
+
+    //start the random number generator
+    std::random_device rd;
+	std::mt19937 gen(rd());
+	srand(time(0));
+    
+    string init_network = "actomyo_initial_condition.txt";
+
+    Network actomyosin_Network(init_network,gen);
 
 
     return 0;
