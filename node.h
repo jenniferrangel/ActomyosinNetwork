@@ -93,11 +93,34 @@ class Actin_Node: public Node, public enable_shared_from_this<Actin_Node>{
     shared_ptr<Filament> get_My_Filament(){return my_filament;}
     void set_My_Filament(shared_ptr<Filament> filament);
 
+    //set & get the left and right neighbors:
     shared_ptr<Actin_Node> get_Left_Neighbor(){return left_neighbor;}
     void set_Left_Neighbor(shared_ptr<Actin_Node> left_nbh);
 
     shared_ptr<Actin_Node> get_Right_Neighbor(){return right_neighbor;}
     void set_Right_Neighbor(shared_ptr<Actin_Node> right_nbh);
+
+    //set & get the linear spring constant and equilibrium length:
+    double get_K_Linear_Actin(){return k_linear_actin;}
+    void set_K_Linear_Actin(double k_linear);
+    double get_Actin_Equi_Len(){return actin_spring_equi_len;}
+    void set_Actin_Equi_Len(double equi_len);
+
+    //set & get k_bend, current angle and equilibrium angle:
+    double get_K_Bend_Actin(){return k_bend_actin;}
+    void set_K_Bend_Actin(double k_bend);
+
+    double get_Current_Angle(){return my_current_angle;}
+    void set_Current_Angle();
+
+    double get_Equi_Angle(){return equi_angle;}
+    void set_Equi_Angle(double new_angle);
+
+
+
+
+
+
 
 
     //Functions

@@ -91,6 +91,30 @@ void Actin_Node::set_Right_Neighbor(shared_ptr<Actin_Node> right_nbh){
     return;
 }
 
+void Actin_Node::set_K_Linear_Actin(double k_linear){
+    this->k_linear_actin = k_linear;
+    return;
+}
+
+void Actin_Node::set_Actin_Equi_Len(double equi_len){
+    this->actin_spring_equi_len = equi_len;
+    return;
+}
+
+void Actin_Node::set_K_Bend_Actin(double k_bend){
+    this->k_bend_actin = k_bend;
+    return;
+}
+
+void Actin_Node::set_Current_Angle(){
+    //NEED TO FINISH THIS CALCULATION!!!!!
+}
+
+void Actin_Node::set_Equi_Angle(double new_angle){
+    this->equi_angle = new_angle;
+    return;
+}
+
 //==============================
 //Destructor:
 //==============================
