@@ -26,22 +26,29 @@
 //class Network: public enable_shared_from_this<Network> {
 class Network{
     private:
-        //vector<shared_ptr<Filament>> filaments;
+        vector<shared_ptr<Filament>> filaments;
 
         int num_filaments;
         mt19937 gen;
 
     public:
         //Constructor:
+        //==========================
         Network(string filename, mt19937 gen);
 
-        //Getters & setters
-        int get_num_filaments(){return num_filaments;}
+        //Getters & setters:
+        //==========================
+        void get_Filaments(vector<shared_ptr<Filament>>& filaments);
+        //set and get the number of actin filaments in the network:
+        void update_Num_Filaments(shared_ptr<Filament>& new_Filament);  //updates # filaments but also filaments vector
+        int get_Num_Filaments(){return num_filaments;}
         mt19937 get_Random_Generator(){return gen;}
 
-        //Functions
+        //Functions:
+        //==========================
 
-        //Destructor
+        //Destructor:
+        //==========================
 	    ~Network();
 
 };

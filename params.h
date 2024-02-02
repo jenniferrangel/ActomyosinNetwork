@@ -13,4 +13,6 @@
 //// Simulation Constants
 //In this file we store parameters that are calibrated or ones you do not want to change the value for
 
+const int INIT_NUM_ACTIN_NODES = 3;
+
 #endif

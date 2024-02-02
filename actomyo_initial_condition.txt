@@ -2,4 +2,10 @@ FilamentNumber:1
 FirstIsBardedEnd:1
 LastIsBarbedEnd:0
 Node1:0,0
-End_Filament
+End_Filament:
+
+FilamentNumber:2
+FirstIsBardedEnd:0
+LastIsBarbedEnd:1
+Node1:1,1
+End_Filament:
