@@ -1,2 +1,40 @@
-For now, we will define all parameters in main.cpp and externs.h
-Once parameters are calibrated or we won't change them, we can move them to params.h 
+Parameters:
+    *For now, we will define all parameters in main.cpp and externs.h
+    *Once parameters are calibrated or we won't change them, we can move them to params.h 
+
+*************************************************************************************************
+
+Actin filaments:
+    * each actin filament has a plus (barbed) and pointed end. This could be the first or last node
+        O--------O--------O          OR            O--------O--------O
+	   (+)               (-)                      (-)               (+)
+    
+    * Notice that:
+        -the first and last nodes do NOT have an ANGLE
+        -the first node does NOT have a LEFT neighbor
+        the last node nodes NOT have a RIGHT neighbor 
+
+    Case 1: filament of 3 nodes connected by springs
+                        angle
+                O--------O--------O                
+            No LEFT             No RIGHT
+            angle = 0           angle = 0
+
+    Case 2: filament of 4 nodes connected by springs
+                    angle  angle
+            O--------O--------O--------O              
+        No LEFT                     No RIGHT
+        angle = 0                   angle = 0
+
+    Case 3: filament of 5 or more nodes connected by springs
+                        angle  angle    angle
+                O--------O--------O--------O--------O
+            No LEFT                               No RIGHT
+            angle = 0                             angle = 0
+
+
+                    angle    angle    angle    angle
+            O--------O--------O--------O--------O--------O
+        No LEFT                                       No RIGHT
+        angle = 0                                     angle = 0
+    
