@@ -77,6 +77,7 @@ class Actin_Node: public Node, public enable_shared_from_this<Actin_Node>{
         double k_bend_actin;
         double my_current_angle;
         double equi_angle;
+        double cross_product;  //this is used to determine if angle > 180
 
     public:
     //Constructors:
@@ -111,7 +112,8 @@ class Actin_Node: public Node, public enable_shared_from_this<Actin_Node>{
     void set_K_Bend_Actin(double k_bend);
 
     double get_Current_Angle(){return my_current_angle;}
-    void set_Current_Angle();
+    void calc_Current_Angle();
+    void set_Current_Angle(double my_angle);
 
     double get_Equi_Angle(){return equi_angle;}
     void set_Equi_Angle(double new_angle);

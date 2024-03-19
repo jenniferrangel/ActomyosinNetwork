@@ -25,9 +25,12 @@
 
 Network::Network(string filename, mt19937 gen){
     num_filaments = 0;
+    this->gen = gen;
 
+    //open the file
     ifstream ifs(filename.c_str());
     
+    //check if input file is open
     if(!ifs.is_open()) {
 		cout << filename << " is not available! Please check input file name." << endl;
 		return;
@@ -47,11 +50,11 @@ Network::Network(string filename, mt19937 gen){
     double y;
     Network* my_network = this;
 
-    //parse through the  input file
+    //parse through the input file line by line and read into "line"
     while(getline(ifs,line)){
         ss.str(line);
 
-        getline(ss,temp,':');
+        getline(ss,temp,':'); //read values separated by : and stored into "temp"
 
         if (temp == "FilamentNumber"){
             ss >> fil_num;
@@ -68,16 +71,21 @@ Network::Network(string filename, mt19937 gen){
             initialNode = location;            
         }
         else if(temp == "End_Filament"){
-            //input data is used to create new cell. New cell is pushed onto vector that holds all filaments in the network.
+            //input data is used to create a new filament. New filament is pushed onto vector that holds all filaments in the network.
             cout << "Making an actin filament" << endl;
 
             shared_ptr<Filament> curr = make_shared<Filament>(my_network, fil_num, firstIsBarbed, lastIsBarbed, initialNode);
+            //give the filaments its nodes:
+            curr->make_nodes(); 
             num_filaments++;
+            //push filament onto vector that holds all actin filaments in tissue
+            filaments.push_back(curr); 
         }
         ss.clear();
     }
     ifs.close();
 
+    //The following is for checking purposes:
     cout << "My number of filaments is " << get_Num_Filaments() << endl;
     cout << "My filament # is: " << fil_num << endl;
     if(firstIsBarbed == true){

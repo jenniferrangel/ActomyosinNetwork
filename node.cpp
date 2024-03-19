@@ -70,7 +70,8 @@ Actin_Node::Actin_Node(Coord location, shared_ptr<Filament> my_filament, shared_
     this->left_neighbor = left_nbh;
     this->right_neighbor = right_nbh;
 
-    //NEED TO DO THE ANGLE CALCULATION
+    //compute the angle this node is associated with
+    calc_Current_Angle();
 }
 
 //==============================
@@ -106,8 +107,51 @@ void Actin_Node::set_K_Bend_Actin(double k_bend){
     return;
 }
 
-void Actin_Node::set_Current_Angle(){
-    //NEED TO FINISH THIS CALCULATION!!!!!
+void Actin_Node::calc_Current_Angle(){
+    //Recall that cos(theta) = (r_left . r_right)/(|r_left| |r_right|) and theta = acos((r_left . r_right)/(|r_left| |r_right|))
+    
+    //First compute the left and right vectors
+    Coord left_vec = get_Left_Neighbor()->get_Node_Location() - get_Node_Location();
+    Coord right_vec = get_Right_Neighbor()->get_Node_Location() - get_Node_Location();
+
+    //Then compute the lengths
+    double left_length = left_vec.length();
+    double right_length = right_vec.length();
+
+    //avoid a zero in the denominator or an empty
+    if(left_length * right_length == 0){
+        my_current_angle = 0;
+        cout << "Zero in denominator! Overlapping nodes in cal_Current_Angle()!" << endl;
+        return;
+    }else if (isnan(left_length * right_length)){
+        cout << "NaN in cal_Current_Angle() Filament " << get_My_Filament()->get_Filament_Num() << endl;
+		exit(1);
+    }
+
+    double costheta = left_vec.dot(right_vec) / (left_length * right_length);
+    double theta = acos( min(max(costheta,-1.0), 1.0) );
+
+    //acos only returns angles between 0 and pi, but the angle can be > pi. So we need to calculate the cross product to get correct angle
+        // if crossproduct > 0 then angle is between 0 and pi
+        // if crossproduct < 0 then angle is > pi and we need to do 2pi-theta to get correct angle
+    
+    double crossProduct = left_vec.cross(right_vec);
+
+    if(crossProduct < 0.0){
+        theta = 2 * pi - theta;
+    }
+
+    //update the angle and cross product in protected member variables
+    my_current_angle = theta;
+    cout << "My angle: " << theta << endl;
+    cross_product = crossProduct;
+
+    return;  
+}
+
+void Actin_Node::set_Current_Angle(double my_angle){
+    this->my_current_angle = my_angle;
+    return;
 }
 
 void Actin_Node::set_Equi_Angle(double new_angle){

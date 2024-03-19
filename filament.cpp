@@ -42,6 +42,10 @@ Filament::Filament(Network* network, int fil_Number, bool firstIsBarbed, bool la
 
 }
 
+void Filament::make_nodes(){
+    cout << "NEED TO FINISH make_nodes() function!!!" << endl;
+}
+
 //==============================
 //Getters and setters:
 //==============================
@@ -72,6 +76,17 @@ void Filament::set_Initial_Num_Actin_Nodes(int initNumber){
 
 void Filament::set_Num_Actin_Nodes(int number_actin_nodes){
     this->num_actin_nodes = number_actin_nodes;
+    return;
+}
+
+void Filament::get_Actin_Nodes_Vec(vector<shared_ptr<Actin_Node>>& actins){
+    actins = this->actin_nodes;
+    return;
+}
+
+void Filament::add_Actin_Node_Vec(shared_ptr<Actin_Node> curr){
+    this->actin_nodes.push_back(curr);
+    this->num_actin_nodes++;
     return;
 }
 

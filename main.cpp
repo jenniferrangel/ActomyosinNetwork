@@ -69,7 +69,10 @@ int main(){
     
     string init_network = "actomyo_initial_condition.txt";
 
+    //instantiate the network: making the filaments and their respective nodes
+    cout << "Generating network" << endl;
     Network actomyosin_Network(init_network,gen);
+    cout << "Finished creating the network" << endl;
 
 
     return 0;

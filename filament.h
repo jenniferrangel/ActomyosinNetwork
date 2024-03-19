@@ -39,13 +39,15 @@ class Filament: public enable_shared_from_this<Filament> {
 
         int initial_num_actin_nodes;
         int num_actin_nodes;
-        //vector<shared_ptr<Actin_Node>> actin_nodes;
+        vector<shared_ptr<Actin_Node>> actin_nodes;
 
     public:
     //Constructor:
     //=======================
     Filament(Network* network, int fil_Number, bool firstIsBarbed, bool lastIsBarbed, Coord initNode);
 
+    void make_nodes();
+    
     //Destructor
     //=======================
     ~Filament();
@@ -67,6 +69,9 @@ class Filament: public enable_shared_from_this<Filament> {
     double get_Actin_Drag_Coeff(){return actin_drag_coeff;}
     void set_Actin_Drag_Coeff(double new_drag);
 
+    //getset the filament seed
+    Coord get_First_Node(){return firstNode;}
+
     //get number of initial actin filament nodes:
     int get_Initial_Num_Actin_Nodes(){return initial_num_actin_nodes;}
     void set_Initial_Num_Actin_Nodes(int initNumber);
@@ -74,6 +79,12 @@ class Filament: public enable_shared_from_this<Filament> {
     //get number of actin filament nodes:
     int get_Num_Actin_Nodes(){return num_actin_nodes;}
     void set_Num_Actin_Nodes(int number_actin_nodes);
+
+    //get actin nodes
+    void get_Actin_Nodes_Vec(vector<shared_ptr<Actin_Node>>& actins);
+
+    //add a new actin node to the node vector
+    void add_Actin_Node_Vec(shared_ptr<Actin_Node> curr);
 
 
 
