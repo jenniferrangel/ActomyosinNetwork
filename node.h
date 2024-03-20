@@ -118,15 +118,9 @@ class Actin_Node: public Node, public enable_shared_from_this<Actin_Node>{
     double get_Equi_Angle(){return equi_angle;}
     void set_Equi_Angle(double new_angle);
 
-
-
-
-
-
-
-
     //Functions
     //=======================
+    void sound_Off_Node_Info();
 
 };
 

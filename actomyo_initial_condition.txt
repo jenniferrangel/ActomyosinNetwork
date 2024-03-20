@@ -13,5 +13,5 @@ End_Filament:
 FilamentNumber:3
 FirstIsBardedEnd:0
 LastIsBarbedEnd:1
-Node1:2,2
+Node1:0,2
 End_Filament:

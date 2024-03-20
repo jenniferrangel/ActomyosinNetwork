@@ -111,6 +111,36 @@ void Network::update_Num_Filaments(shared_ptr<Filament>& new_Filament){
 }
 
 //=======================================================
+// Functions
+//=======================================================
+void Network::sound_Off_All_Node_Info(){
+    cout << "The network is composed of " << get_Num_Filaments() << " actin filaments, each of which has " << INIT_NUM_ACTIN_NODES << " nodes." << endl;
+    cout << "****************************************************" << endl;
+
+    shared_ptr<Filament> curr;
+    vector<shared_ptr<Actin_Node>> actins;
+
+    for(unsigned int i = 0; i < filaments.size(); i++){
+        curr = filaments.at(i);
+        cout << "Filament #: " << curr->get_Filament_Num()<< endl;
+        cout << "First node is barbed: " << curr->get_First_Node_Polarity()<< endl;
+        cout << "Last node is barbed: " << curr->get_Last_Node_Polarity()<< endl;
+
+        curr->get_Actin_Nodes_Vec(actins);
+
+        for(unsigned int j = 0; j < actins.size(); j++){
+            actins.at(j)->sound_Off_Node_Info();
+        }
+        cout << endl;
+        cout << "***********************" << endl;
+        cout << endl;
+    }
+    cout << "****************************************************" << endl;
+    
+    return;
+}
+
+//=======================================================
 // Destructor
 //=======================================================
 Network::~Network() {

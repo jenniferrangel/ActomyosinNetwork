@@ -74,6 +74,9 @@ int main(){
     Network actomyosin_Network(init_network,gen);
     cout << "Finished creating the network" << endl;
 
+    //for double-checking purposes
+    actomyosin_Network.sound_Off_All_Node_Info();
+
 
     return 0;
 

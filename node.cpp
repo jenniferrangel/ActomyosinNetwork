@@ -165,6 +165,26 @@ void Actin_Node::set_Equi_Angle(double new_angle){
 }
 
 //==============================
+//Functions:
+//==============================
+ void Actin_Node::sound_Off_Node_Info(){
+    cout << "Parent filament #: " << get_My_Filament()->get_Filament_Num() << endl;
+    cout << "Node #: " << get_My_Node_Rank() << endl;
+    cout << "Location: " << get_Node_Location() << endl;
+    cout << "Left Neighbor: " << get_Left_Neighbor()->get_Node_Location() << endl;
+    cout << "Right Neighbor: " << get_Right_Neighbor()->get_Node_Location() << endl;
+    cout << "Drag coeff: " << get_Drag_Coeff() << endl;
+    cout << "Linear spring coeff: " << get_K_Linear_Actin() << endl;
+    cout << "Linear equilibrium length: " << get_Actin_Equi_Len() << endl;
+    cout << "Bending spring coeff: " << get_K_Bend_Actin() << endl;
+    cout << "Current angle: " << get_Current_Angle() << endl;
+    cout << "Equilibrium angle: " << get_Equi_Angle() << endl;
+    cout << "Total force: " << get_Total_Force() << endl;
+
+    return;
+ }
+
+//==============================
 //Destructor:
 //==============================
 Actin_Node::~Actin_Node(){
