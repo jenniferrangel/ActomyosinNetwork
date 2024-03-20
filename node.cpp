@@ -109,7 +109,12 @@ void Actin_Node::set_K_Bend_Actin(double k_bend){
 
 void Actin_Node::calc_Current_Angle(){
     //Recall that cos(theta) = (r_left . r_right)/(|r_left| |r_right|) and theta = acos((r_left . r_right)/(|r_left| |r_right|))
-    
+    //NOTE: the FIRST and LAST nodes in a filament don't have an angle i.e. theta = 0
+        //* since the first node does not have a left neighbor and last node does not have a right neighbor, we set the neighbors equal to the nodes
+        //* first node location = first node's left neighbor location
+        //* last node location = last node's right neighbor location
+        //* this will give us an angle = 0 for first and last position
+
     //First compute the left and right vectors
     Coord left_vec = get_Left_Neighbor()->get_Node_Location() - get_Node_Location();
     Coord right_vec = get_Right_Neighbor()->get_Node_Location() - get_Node_Location();
@@ -121,7 +126,7 @@ void Actin_Node::calc_Current_Angle(){
     //avoid a zero in the denominator or an empty
     if(left_length * right_length == 0){
         my_current_angle = 0;
-        cout << "Zero in denominator! Overlapping nodes in cal_Current_Angle()!" << endl;
+        cout << "Zero in denominator! Overlapping nodes in cal_Current_Angle()! My angle: " << my_current_angle << endl;
         return;
     }else if (isnan(left_length * right_length)){
         cout << "NaN in cal_Current_Angle() Filament " << get_My_Filament()->get_Filament_Num() << endl;

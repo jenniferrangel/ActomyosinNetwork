@@ -37,4 +37,23 @@ Actin filaments:
             O--------O--------O--------O--------O--------O
         No LEFT                                       No RIGHT
         angle = 0                                     angle = 0
-    
+
+*************************************************************************************************
+
+Neighbors for first and last nodes:
+    *the first node does not have a left neighbor, so we set the neighbor equal to the node
+        * first node location = first node's left neighbor location
+        *Ex: node = (0,0) then left neighbor = (0,0)
+
+    *last node does not have a right neighbor, so we set the neighbors equal to the node
+        * last node location = last node's right neighbor location
+        *Ex: node = (2,0) then the right neighbor = (2,0)
+
+*************************************************************************************************
+
+Angles:
+    *the FIRST and LAST nodes in a filament don't have an angle i.e. theta = 0
+        * since the first node does not have a left neighbor and last node does not have a right neighbor, we set the neighbors equal to the nodes
+        * first node location = first node's left neighbor location
+        * last node location = last node's right neighbor location
+        * this will give us an angle = 0 for first and last position

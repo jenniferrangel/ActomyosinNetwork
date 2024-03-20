@@ -87,10 +87,9 @@ class Filament: public enable_shared_from_this<Filament> {
     void add_Actin_Node_Vec(shared_ptr<Actin_Node> curr);
 
 
-
-
     //Functions
     //=======================
+    void update_Actin_Angles();
 
 };
 
