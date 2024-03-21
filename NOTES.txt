@@ -8,15 +8,19 @@ Running:
     *For now, we run using make all which creates folders Animation and DataOutput and program
     *Inside DataOut create the folders:
         -Locations
+        -Node_Data
+        -Filament_Data
+        -Network_Data
+
     *then we run this as:
-        ./program Animation DataOut/Locations
-        |_______| |_______| |_______________|
-         argv[0]   argv[1]       argv[2]
+        ./program Animation DataOutput/Locations DataOutput/Node_Data DataOutput/Filament_Data DataOutput/Network_Data
+        |_______| |_______| |__________________| |__________________| |______________________| |_____________________|
+         argv[0]   argv[1]       argv[2]                argv[3]                argv[4]                 argv[5]
     
     *WE NEED TO KEED THIS ORDER:
         -this is used in main.cpp
 
-    *For now we run it as ./program Animation DataOutput/Locations
+    *For now we run it as ./program Animation DataOutput/Locations DataOutput/Node_Data DataOutput/Filament_Data DataOutput/Network_Data
 
 *************************************************************************************************
 
