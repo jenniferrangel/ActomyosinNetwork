@@ -49,6 +49,10 @@ class Network{
         //for double-checking purposes
         void sound_Off_All_Node_Info();
 
+        //Printing and dataoutput functions
+        //***Functions for VTK output****//
+        void print_VTK_File(ofstream& ofs);
+
         //Destructor:
         //==========================
 	    ~Network();

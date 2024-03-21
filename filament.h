@@ -91,6 +91,9 @@ class Filament: public enable_shared_from_this<Filament> {
     //=======================
     void update_Actin_Angles();
 
+    //***Functions for VTK output****//
+    void print_VTK_Points(ofstream& ofs, int& count);
+
 };
 
 // End Filament Class

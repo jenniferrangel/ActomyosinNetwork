@@ -4,6 +4,22 @@ Parameters:
 
 *************************************************************************************************
 
+Running:
+    *For now, we run using make all which creates folders Animation and DataOutput and program
+    *Inside DataOut create the folders:
+        -Locations
+    *then we run this as:
+        ./program Animation DataOut/Locations
+        |_______| |_______| |_______________|
+         argv[0]   argv[1]       argv[2]
+    
+    *WE NEED TO KEED THIS ORDER:
+        -this is used in main.cpp
+
+    *For now we run it as ./program Animation DataOutput/Locations
+
+*************************************************************************************************
+
 Actin filaments:
     * each actin filament has a plus (barbed) and pointed end. This could be the first or last node
         O--------O--------O          OR            O--------O--------O

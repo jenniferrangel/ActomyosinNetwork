@@ -184,6 +184,15 @@ void Filament::update_Actin_Angles(){
     return;
 }
 
+//***Functions for VTK output****//
+void Filament::print_VTK_Points(ofstream& ofs, int& count){
+    for(unsigned int i = 0; i < actin_nodes.size(); i++){
+        Coord location = actin_nodes.at(i)->get_Node_Location();
+        ofs << location.get_X() << ' ' << location.get_Y() << ' ' << 0 << endl;
+        count++;
+    }
+}
+
 //==============================
 //Destructor:
 //==============================

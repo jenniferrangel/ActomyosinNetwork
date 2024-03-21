@@ -56,13 +56,23 @@ double kB = 1.38064852e-5;              //Boltzmann Const. (micron pN/K)
 double TEMPERATURE = 300.0;             //Kelvin
 double dt = 0.0005;                     //time step (seconds)
 
+int PRINT_VTKS = true; // ./batchGenerator -par -PRINT <1 or 0>
+int NUM_STEPS_PER_FRAME = 1;
 
 
-int main(){
 
-    //cout << "Hello I am in main" << endl;
+int main(int argc, char* argv[]){
+
+    //Read in the names of folders where we store outputs
+    //*****************************************************
+    //Reads in name of folder that stores vtk files. This is "Animation" folder.
+    string animation_folder = argv[1];
+
+    //Reads in the name of folder that stores data output. This is DataOutput/Locations
+    string locations_folder = argv[2];
 
     //start the random number generator
+    //*****************************************************
     std::random_device rd;
 	std::mt19937 gen(rd());
 	srand(time(0));
@@ -70,6 +80,7 @@ int main(){
     string init_network = "actomyo_initial_condition.txt";
 
     //instantiate the network: making the filaments and their respective nodes
+    //*****************************************************
     cout << "Generating network" << endl;
     Network actomyosin_Network(init_network,gen);
     cout << "Finished creating the network" << endl;
@@ -77,7 +88,60 @@ int main(){
     //for double-checking purposes
     actomyosin_Network.sound_Off_All_Node_Info();
 
+    //Variables for outputs
+    //*****************************************************
+    //variables for vtk files
+    int digits;
+    string Filename;
+    string initial = "/Actin_Filament";
+    string Number;
+    string format = ".vtk";	
+	ofstream ofs_anim;
+	int out = 0;
 
+    //variables for dataoutput
+
+    //Start the loop
+    //*****************************************************
+    int Ti = 0;
+    int final_time = 3;
+
+    while(Ti < final_time){
+        cout << "Entered while loop" << endl;
+
+        if(PRINT_VTKS){
+
+            if(Ti % NUM_STEPS_PER_FRAME == 0){
+                digits = ceil(log10(out + 1));
+				if (digits == 1 || digits == 0) {
+					Number = "0000" + to_string(out);
+				}	
+				else if (digits == 2) {
+					Number = "000" + to_string(out);
+				}	
+				else if (digits == 3) {
+					Number = "00" + to_string(out);
+				}
+				else if (digits == 4) {
+					Number = "0" + to_string(out);
+				}
+
+                Filename = animation_folder + initial + Number + format;
+
+                cout << "Opening the animation folder" << endl;
+                ofs_anim.open(Filename.c_str());
+                actomyosin_Network.print_VTK_File(ofs_anim);
+                ofs_anim.close();
+
+                out++;
+            }
+        }
+
+        Ti++;
+
+    }
+	
+	
     return 0;
 
 }

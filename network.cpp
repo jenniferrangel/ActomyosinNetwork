@@ -125,6 +125,7 @@ void Network::sound_Off_All_Node_Info(){
         cout << "Filament #: " << curr->get_Filament_Num()<< endl;
         cout << "First node is barbed: " << curr->get_First_Node_Polarity()<< endl;
         cout << "Last node is barbed: " << curr->get_Last_Node_Polarity()<< endl;
+        cout << "Total number of nodes: " << curr->get_Num_Actin_Nodes()<< endl;
 
         curr->get_Actin_Nodes_Vec(actins);
 
@@ -138,6 +139,38 @@ void Network::sound_Off_All_Node_Info(){
     cout << "****************************************************" << endl;
     
     return;
+}
+
+//***Functions for VTK output****//
+void Network::print_VTK_File(ofstream& ofs){
+
+    ofs << "# vtk DataFile Version 3.0" << endl;
+	ofs << "Point representing Actomyosin Network model" << endl;
+	ofs << "ASCII" << endl << endl;
+	ofs << "DATASET UNSTRUCTURED_GRID" << endl;
+
+    //Need the total number of points/nodes for all filaments
+    int num_Points = 0;
+
+    for(unsigned int i = 0; i < filaments.size(); i++){
+        num_Points += filaments.at(i)->get_Num_Actin_Nodes();
+    }
+
+    //The node/point positions
+    ofs << "POINTS " << num_Points << " float64" << endl;
+
+    vector<int> start_points;
+	vector<int> end_points;
+	int count = 0;
+
+    for(unsigned int i = 0; i < filaments.size(); i++){
+        start_points.push_back(count);
+        filaments.at(i)->print_VTK_Points(ofs,count);
+        end_points.push_back(count - 1);
+    }
+
+    ofs << endl;
+
 }
 
 //=======================================================
