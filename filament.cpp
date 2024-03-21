@@ -191,6 +191,41 @@ void Filament::print_VTK_Points(ofstream& ofs, int& count){
         ofs << location.get_X() << ' ' << location.get_Y() << ' ' << 0 << endl;
         count++;
     }
+
+    return;
+}
+
+//***Functions for data output***//
+//This function prints out the node locations
+void Filament::print_Location(ofstream& ofs, int Ti){
+    //ofs <<"Filament#" << ' ' << "Node#" << ' ' << "Location (x, y, z)" << endl;
+    for(unsigned int i = 0; i < actin_nodes.size(); i++){
+        Coord location = actin_nodes.at(i)->get_Node_Location();
+        ofs << this->get_Filament_Num() << ' ' << actin_nodes.at(i)->get_My_Node_Rank() << ' '<< location.get_X() << ' ' << location.get_Y() << ' ' << 0 << endl;
+
+    }
+    return;
+}
+
+//This function prints out the node data
+void Filament::print_Node_Data(ofstream& ofs, int Ti){
+    //ofs <<"Filament#" << ' ' << "Node#" << ' ' << "Location (x, y, z)" << ' ' <<  "Left Nbr (x, y, z)" << ' ' <<  "Right Nbr (x, y, z)" << ' ' << "Drag Coeff" << ' ' << "k_linear" << ' ' << "Equi Len" << ' ' << "k_bend" << ' ' << "theta" << ' ' << "theta_equi" << endl;
+    for(unsigned int i = 0; i < actin_nodes.size(); i++){
+        Coord location = actin_nodes.at(i)->get_Node_Location();
+        Coord left_neighbor = actin_nodes.at(i)->get_Left_Neighbor()->get_Node_Location();
+        Coord right_neighbor = actin_nodes.at(i)->get_Right_Neighbor()->get_Node_Location();
+
+        ofs << this->get_Filament_Num() << ' ' << actin_nodes.at(i)->get_My_Node_Rank() << ' '<< location.get_X() << ' ' << location.get_Y() << ' ' << 0 << ' ' << left_neighbor.get_X() << ' ' << left_neighbor.get_Y() << ' ' << 0 << ' ' << right_neighbor.get_X() << ' ' << right_neighbor.get_Y() << ' ' << 0 << ' ' << actin_nodes.at(i)->get_Drag_Coeff() << actin_nodes.at(i)->get_K_Linear_Actin() << ' ' << actin_nodes.at(i)->get_Actin_Equi_Len() << ' ' << actin_nodes.at(i)->get_K_Bend_Actin() << ' ' << actin_nodes.at(i)->get_Current_Angle() << ' ' << actin_nodes.at(i)->get_Equi_Angle() << endl;
+    }
+
+    return;
+}
+
+//This function prints out the filament data
+void Filament::print_Filament_Data(ofstream& ofs, int Ti){
+    ofs << this->get_Filament_Num() << ' ' << this->get_Num_Actin_Nodes() << ' ' << this->get_First_Node_Polarity() << ' ' << this->get_Last_Node_Polarity() << endl;
+
+    return;
 }
 
 //==============================

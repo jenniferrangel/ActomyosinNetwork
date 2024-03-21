@@ -50,8 +50,14 @@ class Network{
         void sound_Off_All_Node_Info();
 
         //Printing and dataoutput functions
-        //***Functions for VTK output****//
+        //***Functions for VTK output
         void print_VTK_File(ofstream& ofs);
+
+        //***Printing data output
+        void locations_Output(ofstream& ofs, int Ti);
+        void node_Data_Output(ofstream& ofs, int Ti);
+        void filament_Data_Output(ofstream& ofs, int Ti);
+        void network_Data_Output(ofstream& ofs, int Ti);
 
         //Destructor:
         //==========================

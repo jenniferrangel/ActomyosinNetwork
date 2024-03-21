@@ -68,8 +68,13 @@ int main(int argc, char* argv[]){
     //Reads in name of folder that stores vtk files. This is "Animation" folder.
     string animation_folder = argv[1];
 
-    //Reads in the name of folder that stores data output. This is DataOutput/Locations
+    //Reads in the name of folder that stores data output. 
+    //This is DataOutput/Locations
     string locations_folder = argv[2];
+    //Folders to hold the Node, Filament and Network level data
+    string node_data_folder = argv[3];
+    string filament_data_folder = argv[4];
+    string network_data_folder = argv[5];
 
     //start the random number generator
     //*****************************************************
@@ -100,6 +105,27 @@ int main(int argc, char* argv[]){
 	int out = 0;
 
     //variables for dataoutput
+    //int digits2;
+	string Locations; //this is the filename
+    string locations_initial = "/Locations_";
+    //string Number2;
+	ofstream ofs_loc;
+	int out2 = 0;
+
+    string Node_Data;
+    string node_data_initial = "/Node_Data_";
+    ofstream ofs_node_data;
+    int out3 = 0;
+
+    string Filament_Data;
+    string filament_data_initial = "/Filament_Data_";
+    ofstream ofs_filament_data;
+    int out4 = 0;
+
+    string Network_Data;
+    string network_data_initial = "/Network_Data_";
+    ofstream ofs_network_data;
+    int out5 = 0;
 
     //Start the loop
     //*****************************************************
@@ -109,6 +135,9 @@ int main(int argc, char* argv[]){
     while(Ti < final_time){
         cout << "Entered while loop" << endl;
 
+        //Print vtk files and to DataOutput
+        //*****************************************************
+        //Printing out the VTK files
         if(PRINT_VTKS){
 
             if(Ti % NUM_STEPS_PER_FRAME == 0){
@@ -128,13 +157,50 @@ int main(int argc, char* argv[]){
 
                 Filename = animation_folder + initial + Number + format;
 
-                cout << "Opening the animation folder" << endl;
+                cout << "Opening the file in the animation folder" << endl;
                 ofs_anim.open(Filename.c_str());
                 actomyosin_Network.print_VTK_File(ofs_anim);
                 ofs_anim.close();
 
                 out++;
             }
+        }
+        cout << "VTK printed" << endl;
+
+        //Data output from simulations
+        if(Ti % NUM_STEPS_PER_FRAME == 0){
+            //Printing out the node locations to DataOutput
+            Locations = locations_folder + locations_initial + to_string(out2) + ".txt";
+            ofs_loc.open(Locations.c_str());
+            cout << "Locations output file opened..." << endl;
+            actomyosin_Network.locations_Output(ofs_loc, Ti);
+            ofs_loc.close();
+            out2++;
+
+            //Printing out the node data 
+            Node_Data = node_data_folder + node_data_initial + to_string(out3) + ".txt";
+            ofs_node_data.open(Node_Data.c_str());
+            cout << "Node data output file opened..." << endl;
+            actomyosin_Network.node_Data_Output(ofs_node_data, Ti);
+            ofs_node_data.close();
+            out3++;
+
+            //Printing out the filament data
+            Filament_Data = filament_data_folder + filament_data_initial + to_string(out4) + ".txt";
+            ofs_filament_data.open(Filament_Data.c_str());
+            cout << "Filament data output file opened..." << endl;
+            actomyosin_Network.filament_Data_Output(ofs_filament_data, Ti);
+            ofs_filament_data.close();
+            out4++;
+
+            //Printing out the network data
+            Network_Data = network_data_folder + network_data_initial + to_string(out5) + ".txt";
+            ofs_network_data.open(Network_Data.c_str());
+            cout << "Network data output file opened..." << endl;
+            actomyosin_Network.network_Data_Output(ofs_network_data, Ti);
+            ofs_network_data.close();
+            out5++;
+
         }
 
         Ti++;

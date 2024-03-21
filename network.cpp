@@ -171,6 +171,44 @@ void Network::print_VTK_File(ofstream& ofs){
 
     ofs << endl;
 
+    return;
+
+}
+
+//***Functions for printing data output***//
+//This function prints out the node locations
+void Network::locations_Output(ofstream& ofs, int Ti){
+    ofs <<"Filament#" << ' ' << "Node#" << ' ' << "Location (x, y, z)" << endl;
+    for(unsigned int i = 0; i < filaments.size(); i++){
+        filaments.at(i)->print_Location(ofs, Ti);
+    }
+
+    return;
+}
+
+//This function prints the node data info
+void Network::node_Data_Output(ofstream& ofs, int Ti){
+    ofs <<"Filament#" << ' ' << "Node#" << ' ' << "Location (x, y, z)" << ' ' <<  "Left Nbr (x, y, z)" << ' ' <<  "Right Nbr (x, y, z)" << ' ' << "Drag Coeff" << ' ' << "k_linear" << ' ' << "Equi Len" << ' ' << "k_bend" << ' ' << "theta" << ' ' << "theta_equi" << endl;
+    for(unsigned int i = 0; i < filaments.size(); i++){
+        filaments.at(i)->print_Node_Data(ofs, Ti);
+    }
+    return;
+}
+
+//This function prints the filament data node info
+void Network::filament_Data_Output(ofstream& ofs, int Ti){
+    ofs << "Filament#" << ' ' << "#Nodes" << ' ' << "Polarity_1stNode" << ' ' << "Polarity_LastNode" << endl;
+    for(unsigned int i = 0; i < filaments.size(); i++){
+        filaments.at(i)->print_Filament_Data(ofs, Ti);
+    }
+    return;
+}
+
+//This function prints the network data node info
+void Network::network_Data_Output(ofstream& ofs, int Ti){
+    ofs << "NumberFilaments" << ' ' << "Ti" << endl;
+    ofs << this->get_Num_Filaments() << ' ' << Ti << endl;
+    return;
 }
 
 //=======================================================
