@@ -44,9 +44,16 @@ class Filament: public enable_shared_from_this<Filament> {
     public:
     //Constructor:
     //=======================
+    //Constructor for when we want to define nodes within the code using position of initial node
     Filament(Network* network, int fil_Number, bool firstIsBarbed, bool lastIsBarbed, Coord initNode);
 
+    //Constructor for the case when nodes are predefined
+    Filament(Network* network, int fil_Number, bool firstIsBarbed, bool lastIsBarbed);
+
     void make_nodes();
+    //make nodes with predefined positions
+    void make_nodes(vector<Coord> nodes);
+
     
     //Destructor
     //=======================

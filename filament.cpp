@@ -42,6 +42,20 @@ Filament::Filament(Network* network, int fil_Number, bool firstIsBarbed, bool la
 
 }
 
+//for the case when nodes are predefined:
+Filament::Filament(Network* network, int fil_Number, bool firstIsBarbed, bool lastIsBarbed){
+    this->my_network = network;
+    this->filamentNumber = fil_Number;
+    this->firstNodeIsBarbed = firstIsBarbed;
+    this->lastNodeIsBarbed = lastIsBarbed;
+    
+    //set the damping/drag coefficient
+    this->actin_drag_coeff = ACTIN_DRAG_COEFF;
+    cout << "My drag coeff is: " << actin_drag_coeff << endl;
+
+    num_actin_nodes = 0;
+}
+
 void Filament::make_nodes(){
     cout << "Making the actin nodes!" << endl;
 
@@ -122,6 +136,93 @@ void Filament::make_nodes(){
     cout << "Finished making the actin nodes!" << endl;
 
     return;
+}
+
+//make nodes with predefined positions
+void Filament::make_nodes(vector<Coord> nodes){
+    cout << "Making the actin nodes!" << endl;
+
+    double current_x;
+    double current_y;
+    Coord location;
+    Coord node;
+    shared_ptr<Filament> this_filament = shared_from_this();
+    shared_ptr<Actin_Node> previousActin;
+    shared_ptr<Actin_Node> currentActin;
+
+    shared_ptr<Actin_Node> original; //to save the starter node
+    //to fix the neighbors of first and last node
+    shared_ptr<Actin_Node> first;
+    shared_ptr<Actin_Node> last;
+
+    //make the successive actin nodes
+    for(unsigned int i = 0; i < nodes.size(); i++){
+        if(i==0){
+            this->firstNode = nodes.at(i);
+            current_x = firstNode.get_X();
+            current_y = firstNode.get_Y();
+            location = Coord(current_x, current_y);
+            shared_ptr<Actin_Node> new_node = make_shared<Actin_Node>(location, this_filament);
+            original = new_node;
+            first = new_node;
+            previousActin = new_node;
+            actin_nodes.push_back(previousActin);
+            num_actin_nodes++;
+        }else{
+            node = nodes.at(i);
+            current_x = node.get_X();
+            current_y = node.get_Y();
+            location = Coord(current_x, current_y);
+            shared_ptr<Actin_Node> new_node = make_shared<Actin_Node>(location, this_filament);
+            currentActin = new_node;
+            actin_nodes.push_back(currentActin);
+            num_actin_nodes++;
+
+            //setting the left and right neighbors
+            previousActin->set_Right_Neighbor(currentActin);
+            currentActin->set_Left_Neighbor(previousActin);
+
+            previousActin = currentActin;
+            last = currentActin;
+        }
+
+    }
+
+    //The first and last nodes do not have a pair of neighbors
+    //The FIRST node does NOT have a LEFT neighbor so we will set the left neighbor to itself. Ex if node is (0,0) then left neighbor = (0,0)
+    original->set_Left_Neighbor(first);
+    
+    //The LAST node does NOT have a RIGHT neighbor so we will set the right neighbor to itself. Ex if node is (1,0) then right neighbor = (1,0)
+    currentActin->set_Right_Neighbor(last);
+
+    //Now we set the private node member variables
+    vector<shared_ptr<Actin_Node>> actins; //will store actin nodes here
+    this->get_Actin_Nodes_Vec(actins);
+    //the drag coefficient is inherited from the filament
+    double new_drag_coeff = this->get_Actin_Drag_Coeff();
+    // double spring_equi_len = 0.0;
+    // double k_linear = 0.0;
+    // double k_bend = 0.0;
+    int rank = 0;
+
+    for(unsigned int i = 0; i < actins.size(); i++){
+        rank = i;
+        actins.at(i)->set_Drag_Coeff(new_drag_coeff);
+        actins.at(i)->set_Actin_Equi_Len(ACTIN_SPRING_EQUI_LEN);
+        actins.at(i)->set_K_Linear_Actin(K_LINEAR_STIFF_ACTIN);
+        actins.at(i)->set_K_Bend_Actin(K_BEND_STIFF_ACTIN);
+        actins.at(i)->set_Equi_Angle(THETA_EQUI_ANGLE);
+
+        actins.at(i)->set_My_Node_Rank(rank);
+    }
+
+    //update the actin filament angles
+    update_Actin_Angles();
+
+    cout << "Finished making the actin nodes!" << endl;
+
+    return;
+
 }
 
 //==============================

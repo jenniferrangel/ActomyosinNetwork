@@ -19,6 +19,22 @@ Parameter files:
 
 ***********************************************************************
 
+Initial conditions (IC):
+
+    (1) txt file that only includes the position of the first node but the code generates the rest of the nodes
+        - Ex: actomyo_initial_condition.txt
+
+    (2) txt file with positions of all nodes in the filament predefined
+    params.h: contains the parameters that are calibrated, known or will not be changed (constantly or at all)
+        - Ex: actomyo_nodes_initial.txt
+    
+    Instructions: In main.cpp
+        - set PREDEFINED_INITIAL_NODES = false if using IC (1) 
+        - set PREDEFINED_INITIAL_NODES = true if using IC (2) 
+        - uncomment/comment respective lines under the section "//instantiate the network:"
+
+***********************************************************************
+
 To compile and run the code use the following commands:
 
     (1) make clean

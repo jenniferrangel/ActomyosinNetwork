@@ -35,6 +35,7 @@ class Network{
         //Constructor:
         //==========================
         Network(string filename, mt19937 gen);
+        Network(string filename, mt19937 gen, bool predefined_nodes);        
 
         //Getters & setters:
         //==========================

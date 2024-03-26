@@ -56,6 +56,7 @@ double kB = 1.38064852e-5;              //Boltzmann Const. (micron pN/K)
 double TEMPERATURE = 300.0;             //Kelvin
 double dt = 0.0005;                     //time step (seconds)
 
+bool PREDEFINED_INITIAL_NODES = true;
 int PRINT_VTKS = true; // ./batchGenerator -par -PRINT <1 or 0>
 int NUM_STEPS_PER_FRAME = 1;
 
@@ -82,12 +83,19 @@ int main(int argc, char* argv[]){
 	std::mt19937 gen(rd());
 	srand(time(0));
     
-    string init_network = "actomyo_initial_condition.txt";
-
     //instantiate the network: making the filaments and their respective nodes
     //*****************************************************
     cout << "Generating network" << endl;
-    Network actomyosin_Network(init_network,gen);
+
+    //***if we want to generate nodes within code
+    // string init_network = "actomyo_initial_condition.txt";
+    // Network actomyosin_Network(init_network,gen,PREDEFINED_INITIAL_NODES);
+
+    //***if the initial condition file already has the position of all nodes:
+    //input file that already has all of the nodes predefined and PREDEFINED_INITIAL_NODES=true
+    string init_network_with_nodes = "actomyo_nodes_initial.txt";
+    Network actomyosin_Network(init_network_with_nodes,gen,PREDEFINED_INITIAL_NODES);
+
     cout << "Finished creating the network" << endl;
 
     //for double-checking purposes

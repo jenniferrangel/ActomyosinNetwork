@@ -23,7 +23,7 @@
 //=======================================================
 //network constructor makes new network from .txt file that is read in
 
-Network::Network(string filename, mt19937 gen){
+/* Network::Network(string filename, mt19937 gen){
     num_filaments = 0;
     this->gen = gen;
 
@@ -87,12 +87,167 @@ Network::Network(string filename, mt19937 gen){
 
     //The following is for checking purposes:
     cout << "My number of filaments is " << get_Num_Filaments() << endl;
-    cout << "My filament # is: " << fil_num << endl;
-    if(firstIsBarbed == true){
-        cout << "First node is barbed end: " << firstIsBarbed << endl;
-    }
-    cout << "Last node is barbed end: " << lastIsBarbed << endl;
-    cout << "My location is: " << initialNode << endl;
+    // cout << "My filament # is: " << fil_num << endl;
+    // if(firstIsBarbed == true){
+    //     cout << "First node is barbed end: " << firstIsBarbed << endl;
+    // }
+    // cout << "Last node is barbed end: " << lastIsBarbed << endl;
+    // cout << "My location is: " << initialNode << endl;
+} */
+
+Network::Network(string filename, mt19937 gen, bool predefined_nodes){
+    if(predefined_nodes){
+        num_filaments = 0;
+        this->gen = gen;
+
+        //open the file
+        ifstream ifs(filename.c_str());
+        
+        //check if input file is open
+        if(!ifs.is_open()) {
+            cout << filename << " is not available! Please check input file name." << endl;
+            return;
+        }
+
+        stringstream ss;
+        string line;
+        string temp;
+        char garbage;
+
+        //variables to initialize a filament
+        int fil_num;
+        bool firstIsBarbed;
+        bool lastIsBarbed;
+        vector<Coord> nodes;
+        double x;
+        double y;
+        Network* my_network = this;
+
+        //parse through the input file line by line and read into "line"
+        while(getline(ifs,line)){
+            ss.str(line);
+
+            getline(ss,temp,':'); //read values separated by : and stored into "temp"
+
+            if (temp == "FilamentNumber"){
+                ss >> fil_num;
+            }
+            else if(temp == "FirstIsBardedEnd"){
+                ss >> firstIsBarbed;            
+            }
+            else if(temp == "LastIsBarbedEnd"){
+                ss >> lastIsBarbed;
+            }
+            else if(temp == "Node"){
+                cout << "Saving node position into vector" << endl;
+                ss >> x >> garbage >> y;
+                cout << x << "," << y << endl;
+                Coord location(x,y);
+                nodes.push_back(location);
+                cout << location.get_X() << "," << location.get_Y() << endl;
+            }
+            else if(temp == "End_Filament"){
+                //input data is used to create a new filament. New filament is pushed onto vector that holds all filaments in the network.
+                cout << "Making an actin filament..." << endl;
+
+                shared_ptr<Filament> curr = make_shared<Filament>(my_network, fil_num, firstIsBarbed, lastIsBarbed);
+                //give the filaments its nodes:
+                curr->make_nodes(nodes); 
+                num_filaments++;
+                //push filament onto vector that holds all actin filaments in tissue
+                filaments.push_back(curr); 
+
+                //to avoid carrying nodes from other filaments reset the nodes vector
+                nodes.clear();
+                cout << "Actin filament created!" << endl;
+            }
+            ss.clear();
+        }
+        ifs.close();
+
+        //The following is for checking purposes:
+        cout << "My number of filaments is " << get_Num_Filaments() << endl;
+        // cout << "My filament # is: " << fil_num << endl;
+        // if(firstIsBarbed == true){
+        //     cout << "First node is barbed end: " << firstIsBarbed << endl;
+        // }
+        // cout << "Last node is barbed end: " << lastIsBarbed << endl;
+
+    }else{
+        cout << "Need to create the nodes in the network" << endl;
+
+        num_filaments = 0;
+        this->gen = gen;
+
+        //open the file
+        ifstream ifs(filename.c_str());
+        
+        //check if input file is open
+        if(!ifs.is_open()) {
+            cout << filename << " is not available! Please check input file name." << endl;
+            return;
+        }
+
+        stringstream ss;
+        string line;
+        string temp;
+        char garbage;
+
+        //variables to initialize a filament
+        int fil_num;
+        bool firstIsBarbed;
+        bool lastIsBarbed;
+        Coord initialNode;
+        double x;
+        double y;
+        Network* my_network = this;
+
+        //parse through the input file line by line and read into "line"
+        while(getline(ifs,line)){
+            ss.str(line);
+
+            getline(ss,temp,':'); //read values separated by : and stored into "temp"
+
+            if (temp == "FilamentNumber"){
+                ss >> fil_num;
+            }
+            else if(temp == "FirstIsBardedEnd"){
+                ss >> firstIsBarbed;            
+            }
+            else if(temp == "LastIsBarbedEnd"){
+                ss >> lastIsBarbed;
+            }
+            else if(temp == "Node1"){
+                ss >> x >> garbage >> y;
+                Coord location(x,y);
+                initialNode = location;            
+            }
+            else if(temp == "End_Filament"){
+                //input data is used to create a new filament. New filament is pushed onto vector that holds all filaments in the network.
+                cout << "Making an actin filament..." << endl;
+
+                shared_ptr<Filament> curr = make_shared<Filament>(my_network, fil_num, firstIsBarbed, lastIsBarbed, initialNode);
+                //give the filaments its nodes:
+                curr->make_nodes(); 
+                num_filaments++;
+                //push filament onto vector that holds all actin filaments in tissue
+                filaments.push_back(curr); 
+
+                cout << "Actin filament created!" << endl;
+            }
+            ss.clear();
+        }
+        ifs.close();
+
+        //The following is for checking purposes:
+        cout << "My number of filaments is " << get_Num_Filaments() << endl;
+        // cout << "My filament # is: " << fil_num << endl;
+        // if(firstIsBarbed == true){
+        //     cout << "First node is barbed end: " << firstIsBarbed << endl;
+        // }
+        // cout << "Last node is barbed end: " << lastIsBarbed << endl;
+        // cout << "My location is: " << initialNode << endl;
+        }
 }
 
 //=======================================================
@@ -114,7 +269,7 @@ void Network::update_Num_Filaments(shared_ptr<Filament>& new_Filament){
 // Functions
 //=======================================================
 void Network::sound_Off_All_Node_Info(){
-    cout << "The network is composed of " << get_Num_Filaments() << " actin filaments, each of which has " << INIT_NUM_ACTIN_NODES << " nodes." << endl;
+    cout << "The network is composed of " << get_Num_Filaments() << " actin filaments!!" << endl;
     cout << "****************************************************" << endl;
 
     shared_ptr<Filament> curr;
@@ -125,7 +280,7 @@ void Network::sound_Off_All_Node_Info(){
         cout << "Filament #: " << curr->get_Filament_Num()<< endl;
         cout << "First node is barbed: " << curr->get_First_Node_Polarity()<< endl;
         cout << "Last node is barbed: " << curr->get_Last_Node_Polarity()<< endl;
-        cout << "Total number of nodes: " << curr->get_Num_Actin_Nodes()<< endl;
+        cout << "Total number of nodes in filament: " << curr->get_Num_Actin_Nodes()<< endl;
 
         curr->get_Actin_Nodes_Vec(actins);
 
