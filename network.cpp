@@ -296,6 +296,19 @@ void Network::sound_Off_All_Node_Info(){
     return;
 }
 
+//***Calculates forces acting on each filament node***//
+void Network::calculate_New_Forces(int Ti){
+   //#pragma omp parallel for schedule(static,1)
+   for(unsigned int i = 0; i < filaments.size(); i++){
+        cout << "Calc forces for filament: " << i << endl;
+        filaments.at(i)->calculate_New_Forces(Ti);
+        cout << "Successfully calculated forces!!" << endl;
+    }
+   
+   return;
+
+}
+
 //***Functions for VTK output****//
 void Network::print_VTK_File(ofstream& ofs){
 
@@ -325,6 +338,15 @@ void Network::print_VTK_File(ofstream& ofs){
     }
 
     ofs << endl;
+
+/*     //To visualized the barbed end
+    ofs << "BARBED_END " << filaments.size() << " float64" << endl;
+    ofs << "LOOKUP_TABLE discrete_colors" << endl;
+    for(unsigned int i = 0; i < filaments.size(); i++){
+        filaments.at(i)->print_VTK_BarbedEnds(ofs);
+    }
+
+    ofs << endl; */
 
     return;
 

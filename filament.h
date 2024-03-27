@@ -33,6 +33,7 @@ class Filament: public enable_shared_from_this<Filament> {
         //polarity of filament: if the first node is barbed end, then last node is pointed end and vice versa
         bool firstNodeIsBarbed;
         bool lastNodeIsBarbed;
+        Coord barbedEnd;
         double actin_drag_coeff;
         //seed to start the filament
         Coord firstNode;
@@ -72,6 +73,10 @@ class Filament: public enable_shared_from_this<Filament> {
     bool get_Last_Node_Polarity(){return lastNodeIsBarbed;}
     void set_Last_Node_Polarity(bool polarity);
 
+    //get/set the barbed end
+    Coord get_Barbed_End(){return barbedEnd;}
+    void set_Barbed_End();
+
     //get/set damping/drag coefficient for actin filaments
     double get_Actin_Drag_Coeff(){return actin_drag_coeff;}
     void set_Actin_Drag_Coeff(double new_drag);
@@ -98,8 +103,13 @@ class Filament: public enable_shared_from_this<Filament> {
     //=======================
     void update_Actin_Angles();
 
+    //***Calculate forces
+    void calculate_New_Forces(int Ti);
+
     //***Functions for VTK output
     void print_VTK_Points(ofstream& ofs, int& count);
+    void print_VTK_BarbedEnds(ofstream&ofs);
+
 
     //***Functions for data output
     //This function prints out the node locations

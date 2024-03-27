@@ -133,6 +133,9 @@ void Filament::make_nodes(){
     //update the actin filament angles
     update_Actin_Angles();
 
+    //set the barbed end
+    set_Barbed_End();
+
     cout << "Finished making the actin nodes!" << endl;
 
     return;
@@ -219,6 +222,9 @@ void Filament::make_nodes(vector<Coord> nodes){
     //update the actin filament angles
     update_Actin_Angles();
 
+    //set the barbed end
+    set_Barbed_End();
+
     cout << "Finished making the actin nodes!" << endl;
 
     return;
@@ -240,6 +246,36 @@ void Filament::set_First_Node_Polarity(bool polarity){
 
 void Filament::set_Last_Node_Polarity(bool polarity){
     this->lastNodeIsBarbed = polarity;
+    return;
+}
+
+void Filament::set_Barbed_End(){
+    //get polarity of first and last node
+    bool firstNodeBarbed = this->get_First_Node_Polarity();
+    bool lastNodeBarbed = this->get_Last_Node_Polarity();
+
+    //access the nodes in the filament
+    vector<shared_ptr<Actin_Node>> actins; //will store actin nodes here
+    this->get_Actin_Nodes_Vec(actins);
+
+    Coord firstNode;
+    Coord lastNode;
+
+    if(firstNodeBarbed){
+        cout << "First node is the barbed end" << endl;
+
+        firstNode = actins.at(0)->get_Node_Location();
+        this->barbedEnd = firstNode;
+        cout << "Barbed end = " << get_Barbed_End() << endl;
+    }
+    else if(lastNodeBarbed){
+        cout << "Last node is the barbed end" << endl;
+
+        lastNode = actins.at(actins.size() - 1)->get_Node_Location();
+        this->barbedEnd = lastNode;
+        cout << "Barbed end = " << get_Barbed_End() << endl;
+    }
+
     return;
 }
 
@@ -285,6 +321,24 @@ void Filament::update_Actin_Angles(){
     return;
 }
 
+//***Calculate forces***//
+void Filament::calculate_New_Forces(int Ti){
+    vector<shared_ptr<Actin_Node>> actins; //will store actin nodes here
+    this->get_Actin_Nodes_Vec(actins);
+
+    cout << "Calculating forces..." << endl;
+
+    //#pragma omp parallel
+       // {
+    //#pragma omp for schedule(static,1)
+            for(unsigned int i = 0; i < actins.size(); i++){
+                actins.at(i)->calculate_Forces(Ti);
+            }
+        //}
+
+    return;
+}
+
 //***Functions for VTK output****//
 void Filament::print_VTK_Points(ofstream& ofs, int& count){
     for(unsigned int i = 0; i < actin_nodes.size(); i++){
@@ -294,6 +348,14 @@ void Filament::print_VTK_Points(ofstream& ofs, int& count){
     }
 
     return;
+}
+
+void Filament::print_VTK_BarbedEnds(ofstream&ofs){
+    Coord barbed = get_Barbed_End();
+    ofs << barbed.get_X() << ' ' << barbed.get_Y() << ' ' << 0 << endl;
+
+    return;
+
 }
 
 //***Functions for data output***//

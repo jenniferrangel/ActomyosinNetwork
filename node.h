@@ -122,6 +122,13 @@ class Actin_Node: public Node, public enable_shared_from_this<Actin_Node>{
     //=======================
     void sound_Off_Node_Info();
 
+    //***Functions for calculating forces
+    void calculate_Forces(int Ti);
+
+    //Linear spring forces
+    Coord calc_Linear_Force();
+    Coord linear_Spring_Equation(shared_ptr<Actin_Node> node);
+
 };
 
 //Myosin class:

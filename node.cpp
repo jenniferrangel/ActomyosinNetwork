@@ -182,7 +182,76 @@ void Actin_Node::set_Equi_Angle(double new_angle){
     cout << "Total force: " << get_Total_Force() << endl;
 
     return;
- }
+}
+
+//***Calculate force functions***//
+//=================================
+//***calculates total force on the actin node
+void Actin_Node::calculate_Forces(int Ti){
+    cout << "Calculating total force..." << endl;
+
+    //------Linear force from left and right neighbors------
+    //since 1st node doesn't have L nhbr => F^L = 0. Since last node doesn't have R nhbr => F^R = 0.
+    //else F^spring = F^L + F^R
+    cout << "Linear spring force being calculated..." << endl;
+    Coord F_linear = calc_Linear_Force();
+
+    //------Bending force from left and right neighbors------
+
+    //------Stochastic/random force------
+
+
+    //total force actin on node
+    new_total_force = F_linear;
+
+    return;
+}
+
+//***Linear spring force of left and right neighbors
+Coord Actin_Node::calc_Linear_Force(){
+    Coord F_lin;
+    
+    cout << "Calc linear from LEFT neighbor" << endl;
+    Coord F_left = linear_Spring_Equation(left_neighbor);
+    cout << "F_left = " << F_left << endl;
+
+    cout << "Calc linear from RIGHT neighbor" << endl;
+    Coord F_right = linear_Spring_Equation(right_neighbor);
+    cout << "F_right = " << F_right << endl;
+
+    F_lin = F_left + F_right;
+    cout << "F_linear = " << F_lin << endl;
+
+    return F_lin;
+}
+
+Coord Actin_Node::linear_Spring_Equation(shared_ptr<Actin_Node> node){
+    if(node == NULL){
+        cout << "ERROR: Accessing a NULL pointer. Will abort!!!" << endl;
+        exit(1);
+    }
+
+    Coord F_linear;
+
+    //compute the left/right vector and length
+    Coord diff_vec = node->get_Node_Location() - my_location;
+    double diff_length = diff_vec.length();
+    cout << "diff_vec = " << diff_vec << endl;
+    cout << "diff_length = " << diff_length << endl;
+
+    //when we don't have a L or R nbhr, diff_vec = (0,0) and diff_length = 0 so F_linear = (0,0)
+    if(diff_length == 0){
+        cout << "Avoiding 0 in the denominator. Returning (0,0)" << endl;
+        return Coord(0,0);
+    }
+
+    //F_spring = k(|node_i - node_j| - l_equi)((node_i - node_j)/|node_i - node_j|)
+    F_linear = (diff_vec/diff_length)*k_linear_actin*(diff_length - this->actin_spring_equi_len);
+    cout << "Linear Force: " << F_linear << endl;
+
+    return F_linear;
+
+}
 
 //==============================
 //Destructor:

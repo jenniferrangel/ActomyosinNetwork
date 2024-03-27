@@ -143,6 +143,18 @@ int main(int argc, char* argv[]){
     while(Ti < final_time){
         cout << "Entered while loop" << endl;
 
+        //Calculate the forces on filament nodes
+        //*****************************************************
+        cout << "Calculating forces..." << endl;
+        actomyosin_Network.calculate_New_Forces(Ti);
+        cout << "Forces calculated!" << endl;
+
+        //update node positions
+        //*****************************************************
+
+
+
+
         //Print vtk files and to DataOutput
         //*****************************************************
         //Printing out the VTK files
