@@ -309,6 +309,16 @@ void Network::calculate_New_Forces(int Ti){
 
 }
 
+//***Update node positions via Langevin equation***//
+void Network::update_Positions(int Ti){
+    //#pragma omp parallel for schedule(static,1)
+    for(unsigned int i = 0; i < filaments.size(); i++){
+        filaments.at(i)->update_Node_Positions(Ti);
+    }
+
+    return;
+}
+
 //***Functions for VTK output****//
 void Network::print_VTK_File(ofstream& ofs){
 

@@ -53,6 +53,9 @@ class Network{
         //Calculate forces
         void calculate_New_Forces(int Ti);
 
+        //Update node positions via Langevin equation
+        void update_Positions(int Ti);
+
         //Printing and dataoutput functions
         //***Functions for VTK output
         void print_VTK_File(ofstream& ofs);

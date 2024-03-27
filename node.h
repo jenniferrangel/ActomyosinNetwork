@@ -50,7 +50,8 @@ class Node{
 
     //Functions
     //=======================
-
+    //Update locations via Langevin Equation
+    virtual void update_Position(int Ti);
 
 
 

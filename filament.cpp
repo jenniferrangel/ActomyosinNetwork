@@ -339,6 +339,26 @@ void Filament::calculate_New_Forces(int Ti){
     return;
 }
 
+//***Update node positions via Langevin Equation***//
+void Filament::update_Node_Positions(int Ti){
+    vector<shared_ptr<Actin_Node>> actins; //will store actin nodes here
+    this->get_Actin_Nodes_Vec(actins);
+
+    //#pragma omp parallel 
+	    //{	
+    //#pragma omp for schedule(static,1)
+            for(unsigned int i = 0; i < actins.size(); i++){
+                cout << "Updating locations..." << endl;
+                actins.at(i)->update_Position(Ti);
+            }
+        //}
+
+    update_Actin_Angles();
+    
+    return;
+
+}
+
 //***Functions for VTK output****//
 void Filament::print_VTK_Points(ofstream& ofs, int& count){
     for(unsigned int i = 0; i < actin_nodes.size(); i++){

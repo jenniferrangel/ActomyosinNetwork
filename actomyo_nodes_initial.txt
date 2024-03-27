@@ -2,6 +2,6 @@ FilamentNumber:0
 FirstIsBardedEnd:1
 LastIsBarbedEnd:0
 Node:0,0
-Node:0.2,0
 Node:0.4,0
+Node:0.7,0
 End_Filament:

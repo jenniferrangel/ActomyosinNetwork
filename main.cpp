@@ -138,7 +138,7 @@ int main(int argc, char* argv[]){
     //Start the loop
     //*****************************************************
     int Ti = 0;
-    int final_time = 3;
+    int final_time = 10;
 
     while(Ti < final_time){
         cout << "Entered while loop" << endl;
@@ -149,11 +149,12 @@ int main(int argc, char* argv[]){
         actomyosin_Network.calculate_New_Forces(Ti);
         cout << "Forces calculated!" << endl;
 
-        //update node positions
+        // update filament node positions
         //*****************************************************
-
-
-
+        cout << "Updating locations..." << endl;
+        actomyosin_Network.update_Positions(Ti);
+        cout << "Locations updated!!" << endl;
+        
 
         //Print vtk files and to DataOutput
         //*****************************************************

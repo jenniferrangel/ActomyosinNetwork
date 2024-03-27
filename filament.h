@@ -106,6 +106,9 @@ class Filament: public enable_shared_from_this<Filament> {
     //***Calculate forces
     void calculate_New_Forces(int Ti);
 
+    //***Update node positions via Langevin eqn
+    void update_Node_Positions(int Ti);
+
     //***Functions for VTK output
     void print_VTK_Points(ofstream& ofs, int& count);
     void print_VTK_BarbedEnds(ofstream&ofs);

@@ -44,6 +44,27 @@ void Node::set_My_Node_Rank(int node_num){
 //==============================
 //Functions
 //==============================
+//***Update node positions via Langevin Equation***//
+void Node::update_Position(int Ti){
+    cout << "New force exerted on node: " << new_total_force << endl;
+    cout << "Position: " << my_location << endl;
+    cout << "Drag coefficient: " << drag_coeff << endl;
+    cout << "dt: " << dt << endl;
+
+    if(isnan(new_total_force.get_X()) || isnan(new_total_force.get_Y())){
+        cout << "New force is NaN in update_Position() Ti = " << Ti << endl;
+    } else if(isnan(dt)){
+        cout << "dt is NaN in update_Position() Ti = " << Ti << endl;
+    } else if(isnan(drag_coeff)){
+        cout << "drag coeff is NaN in update_Position() Ti = " << Ti << endl;
+    }
+
+    my_location += new_total_force*(dt/drag_coeff);
+
+    cout << "Updated node position = " << my_location << endl;
+
+    return;
+}
 
 //==============================
 //Destructor:
@@ -252,6 +273,7 @@ Coord Actin_Node::linear_Spring_Equation(shared_ptr<Actin_Node> node){
     return F_linear;
 
 }
+
 
 //==============================
 //Destructor:
