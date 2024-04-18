@@ -308,7 +308,6 @@ void Filament::add_Actin_Node_Vec(shared_ptr<Actin_Node> curr){
 //==============================
 //Functions:
 //==============================
-
 void Filament::update_Actin_Angles(){
     vector<shared_ptr<Actin_Node>> actins; //will store actin nodes here
     this->get_Actin_Nodes_Vec(actins);

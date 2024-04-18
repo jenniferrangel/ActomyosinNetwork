@@ -77,3 +77,59 @@ Angles:
         * first node location = first node's left neighbor location
         * last node location = last node's right neighbor location
         * this will give us an angle = 0 for first and last position
+
+*************************************************************************************************
+Bending force:
+    *Notice that we have 3 recurring types of node
+    *F^C: from being a center node:      angle
+                                  O--------O--------O    
+                                             ___                                                                                                ___
+               k_b(theta_self - theta_equi) |        -r_left            cos(theta_self)r_left           r_right            cos(theta_self)r_right  |
+      F^C =    ____________________________ | _____________________  +  _____________________  -  ____________________  +  _______________________ |
+               sqrt(1-cos^2(theta_self))    | ||r_left|| ||r_right||          ||r_left||^2        ||r_right||||r_left||         ||r_right||^2      |
+                                            |___                                                                                                ___|
+                                             (__________  _________)    (_________  ________)     (_________  ________)    (__________  __________)
+                                                        \/                        \/                        \/                        \/
+                                                      term 1                    term 2                    term 3                    term 4
+    
+
+    *F^L: force comes from node's left neighbor:      angle
+                                               O--------O--------O <--current node gets F^L   
+                                             ___                                             ___
+               k_b(theta_left - theta_equi) |        r_LL              cos(theta_left)(-r_left) |
+      F^L =    ____________________________ | ____________________  -  ________________________ |
+               sqrt(1-cos^2(theta_left))    | ||r_LL|| ||-r_left||          ||-r_left||^2       |
+                                            |___                                             ___|
+                                              (________  ________)     (___________  __________)
+                                                       \/                          \/
+                                                    term 1L                     term 2L
+
+
+    *F^R: force comes from node's right neighbor:      angle
+                     current node gets F^R -->  O--------O--------O    
+                                              ___                                               ___
+               k_b(theta_right - theta_equi) |        r_RR              cos(theta_right)(-r_right) |
+      F^R =    ____________________________  | ____________________  -  __________________________ |
+                sqrt(1-cos^2(theta_right))   | ||r_RR|| ||-r_right||          ||-r_right||^2       |
+                                             |___                                               ___|
+                                               (________  _________)    (___________  ____________)
+                                                        \/                          \/
+                                                     term 1R                     term 2R
+
+    *F^C = 0 if:
+        - theta_self = 0             since sqrt(1-cos^2(0)) = sqrt (1-1) = 0 and NO zero in denominator  
+        - theta_self = theta_equi    numerator = 0 and sqrt (1-cos^2(pi)) = sqrt(1-(-1)) = 0 NO zero in denominator
+        - if left_nbr == my_loc      this means it's the FIRST node which has NO angle
+        - if right_nbr == my_loc     this means it's the LAST node which has NO angle
+
+    *F^L = 0 if:
+        - theta_left = 0                      since sqrt(1-cos^2(0)) = sqrt (1-1) = 0 and NO zero in denominator 
+        - theta_left = theta_equi             numerator = 0 and sqrt (1-cos^2(pi)) = sqrt(1-(-1)) = 0 NO zero in denominator
+        - if left_nbr == my_loc               this means it's the first node which has NO left neighbor
+        - if left_nbr->left_nbr == left_nbr   this is the second node and the first node (left nbr) has no angle or left nbr                                        
+
+    *F^R = 0 if:
+        - theta_right = 0                           since sqrt(1-cos^2(0)) = sqrt (1-1) = 0 and NO zero in denominator  
+        - theta_right = theta_equi                  numerator = 0 and sqrt (1-cos^2(pi)) = sqrt(1-(-1)) = 0 NO zero in denominator     
+        - if right_nbr == my_loc                    this means it's the LAST node which has NO right neighbor
+        - if right_nbr -> right_nbr == right_nbr    this is the second to last node who's right neighbor is the last node and the last node has NO angle and NO right nbr                                                                        

@@ -205,6 +205,15 @@ void Actin_Node::set_Equi_Angle(double new_angle){
     return;
 }
 
+void Actin_Node::sound_Off_Neighbors(){
+    cout << "Node #: " << get_My_Node_Rank() << endl;
+    cout << "Location: " << get_Node_Location() << endl;
+    cout << "Left Neighbor: " << get_Left_Neighbor()->get_Node_Location() << endl;
+    cout << "Right Neighbor: " << get_Right_Neighbor()->get_Node_Location() << endl;
+
+    return;
+}
+
 //***Calculate force functions***//
 //=================================
 //***calculates total force on the actin node
@@ -216,14 +225,18 @@ void Actin_Node::calculate_Forces(int Ti){
     //else F^spring = F^L + F^R
     cout << "Linear spring force being calculated..." << endl;
     Coord F_linear = calc_Linear_Force();
+    cout << "F_linear = " << F_linear << endl;
 
     //------Bending force from left and right neighbors------
+    cout << "Bending force being calculated..." << endl;
+    Coord F_bending = calc_Bending_Force();
+    cout << "F_bending = " << F_bending << endl;
 
     //------Stochastic/random force------
 
 
     //total force actin on node
-    new_total_force = F_linear;
+    new_total_force = F_linear + F_bending;
 
     return;
 }
@@ -271,6 +284,195 @@ Coord Actin_Node::linear_Spring_Equation(shared_ptr<Actin_Node> node){
     cout << "Linear Force: " << F_linear << endl;
 
     return F_linear;
+
+}
+
+//***Bending force at every node triplet: First and last node do NOT have an angle
+Coord Actin_Node::calc_Bending_Force(){
+    Coord F_bend_total;
+    
+    cout << "Calculating bending F^C..." << endl;
+    Coord F_bend_center = bending_Force_Equation_Center();   //this is F^C
+    cout << "F_center = " << F_bend_center << endl;
+
+    cout << "Calculating bending F^L..." << endl;
+    Coord F_bend_left = bending_Force_Equation_Left();       //this is F^L
+    cout << "F_left = " << F_bend_left << endl;
+   
+    cout << "Calculating bending F^R..." << endl;
+    Coord F_bend_right = bending_Force_Equation_Right();     //this is F^R
+    cout << "F_right = " << F_bend_right << endl;
+
+    cout << "summing the bending forces..." << endl;
+    F_bend_total = F_bend_center + F_bend_left + F_bend_right;
+
+    if(cross_product < 0.0){
+        F_bend_total = F_bend_total*(-1);
+    }
+
+    return F_bend_total;
+
+}
+
+Coord Actin_Node::bending_Force_Equation_Center(){
+    Coord F_center;
+    double constant_self;
+
+    double epsilon = 0.0001;
+
+    Coord left_nbr = left_neighbor -> get_Node_Location();
+    Coord right_nbr = right_neighbor -> get_Node_Location();
+
+    if (left_nbr == my_location) {
+        cout << "First node! Has NO angle and left_nbr = my_loc so F^C = 0!!" << endl;
+        return F_center;
+    }
+    else if (right_nbr == my_location) {
+        cout << "Last node! Has NO angle and right_nbr = my_loc so F^C = 0!!" << endl;
+        return F_center;
+    }
+    else if (my_current_angle == 0) {
+        //Has no angle so does not experience F^C
+        cout << "Not a center node because my_angle = 0 so F^C = 0!" << endl;
+        return F_center;
+    }
+    else if (abs(my_current_angle - pi) < epsilon) {
+        //takes care of both numerator and denominator being = 0
+        cout << "|my_angle - pi| < epsilon! F^C = 0!" << endl;
+        return F_center;
+    }
+
+    constant_self = k_bend_actin*(my_current_angle - equi_angle)/(sqrt(1-pow(cos(my_current_angle),2)));
+    cout << "constant_self = " << constant_self << endl;
+
+    Coord left_vec = left_neighbor -> get_Node_Location() - my_location;
+    Coord right_vec = right_neighbor -> get_Node_Location() - my_location;
+    double left_length = left_vec.length();
+    double right_length = right_vec.length();
+
+    Coord term1 = (left_vec*(-1))/(left_length*right_length);
+    Coord term2 = left_vec*cos(my_current_angle)/pow(left_length,2);
+    Coord term3 = (right_vec*(-1))/(right_length*left_length);
+    Coord term4 = right_vec*cos(my_current_angle)/pow(right_length,2);
+
+    F_center = (term1 + term2 + term3 + term4) * constant_self;
+    cout << "Bending center:" << endl;
+    cout << "F_center = (" << term1 << " + " << term2 << " + " << term3 << " + " << term4 << ") * " << constant_self << " = " << F_center << endl;
+
+    return F_center;
+}
+
+Coord Actin_Node::bending_Force_Equation_Left(){
+    Coord F_left;
+    double constant_left;
+    double epsilon = 0.0001;
+
+    //First deal with the fact that the first node has NO angle and NO left nbr (set to be itself)
+    Coord left_nbr = left_neighbor -> get_Node_Location();
+    if (left_nbr == my_location){
+        cout << "First node! Have NO angle and NO left neighbor so F^L = 0!!" << endl;
+        return F_left;
+    }
+
+    //The first node has no angle, no left neighbor (set to be itself) and no LL neighbor
+    //This is for the 2nd node, where F^L = 0 because it's L nbr (1st node) has NO angle
+    Coord left_left_nbr = left_neighbor -> get_Left_Neighbor() -> get_Node_Location();
+    if (left_left_nbr == left_nbr){
+        cout << "Second node! My left nbr (1st node) has no angle so F^L = 0!!" << endl;
+        return F_left;
+    }
+
+    //Now we can deal with the fact that theta_left = 0 or theta_left = theta_equi
+    double left_angle = left_neighbor->get_Current_Angle();
+    if (left_angle == 0){
+        //Has no angle left nbr
+        cout << "No angle and No left neighbor! F^L = 0!" << endl;
+        return F_left;
+    }
+    else if (abs(left_angle - pi) < epsilon){
+        //takes care of both numerator and denominator being = 0
+        cout << "|left_angle - pi| < epsilon! F^L = 0!" << endl;
+        return F_left;
+    }
+
+    //Now we can calculate F^L for nodes that do have a Left nbr with an angle:
+    double left_equi_angle = left_neighbor->get_Equi_Angle();
+    double k_bend = left_neighbor->get_K_Bend_Actin();
+
+    constant_left = k_bend*(left_angle - left_equi_angle)/(sqrt(1-pow(cos(left_angle),2)));
+    cout << "constant_left = " << constant_left << endl;
+
+    Coord left_vec = left_neighbor -> get_Node_Location() - my_location;
+    Coord left_left_vec = left_neighbor -> get_Left_Neighbor() -> get_Node_Location() - left_neighbor -> get_Node_Location();
+    double left_length = left_vec.length();
+    double left_left_length = left_left_vec.length();
+
+    Coord term_1L = left_left_vec/(left_left_length*left_length);
+    Coord term_2L = left_vec*cos(left_angle)/pow(left_length,2); 
+
+	F_left = (term_1L + term_2L) * constant_left;
+
+    cout << "Bending left: " << endl;
+    cout << "F_left = (" << term_1L << " + " << term_2L << ") * " << constant_left << " = " << F_left << endl;
+
+    return F_left;
+
+}
+
+Coord Actin_Node::bending_Force_Equation_Right(){
+    Coord F_right;
+    double constant_right;
+    double epsilon = 0.0001;
+
+    //First deal with the fact that the last node has NO angle and NO right nbr (set to be itself)
+    Coord right_nbr = right_neighbor -> get_Node_Location();
+    if (right_nbr == my_location){
+        cout << "Last node! Have NO angle and NO right neighbor so F^R = 0!!" << endl;
+        return F_right;
+    }
+
+    //The last node has no angle, no right neighbor (set to be itself) and no RR neighbor
+    //This is for the 2nd to last node, where F^R = 0 because it's R nbr (last node) has NO angle
+    Coord right_right_nbr = right_neighbor -> get_Right_Neighbor() -> get_Node_Location();
+    if (right_right_nbr == right_nbr){
+        cout << "Second to last node! My right nbr (last node) has no angle so F^R = 0!!" << endl;
+        return F_right;
+    }
+
+    //Now we can deal with the fact that theta_right = 0 or theta_right = theta_equi
+    double right_angle = right_neighbor->get_Current_Angle();
+    if (right_angle == 0){
+        //Has no angle
+        cout << "No angle and No right neighbor! F^R = 0!" << endl;
+        return F_right;
+    }
+    else if (abs(right_angle - pi) < epsilon){
+        //takes care of both numerator and denominator being = 0
+        cout << "|right_angle - pi| < epsilon! F^R = 0!" << endl;
+        return F_right;
+    }
+
+    //Now we can calculate F^R for nodes that do have a right nbr with an angle:
+    double right_equi_angle = right_neighbor->get_Equi_Angle();
+    double k_bend = right_neighbor->get_K_Bend_Actin();
+
+    constant_right = k_bend*(right_angle - right_equi_angle)/(sqrt(1-pow(cos(right_angle),2)));
+    cout << "constant right = " << constant_right << endl;
+
+    Coord right_vec = right_neighbor -> get_Node_Location() - my_location;
+    Coord right_right_vec = right_neighbor -> get_Right_Neighbor() -> get_Node_Location() - right_neighbor -> get_Node_Location(); 
+    double right_length = right_vec.length();
+    double right_right_length = right_right_vec.length();
+
+    Coord term_1R = right_right_vec/(right_right_length*right_length);
+    Coord term_2R = right_vec*cos(right_angle)/pow(right_length,2);
+
+    F_right = (term_1R + term_2R)*constant_right;
+
+    cout << "Bending right: " << endl;
+    cout << "F_right = (" << term_1R << " + " << term_2R << ") * " << constant_right << " = " << F_right << endl;
+
+    return F_right;
 
 }
 

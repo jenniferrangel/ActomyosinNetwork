@@ -49,6 +49,7 @@ class Network{
         //==========================
         //for double-checking purposes
         void sound_Off_All_Node_Info();
+        void sound_Off_Neighbors();
 
         //Calculate forces
         void calculate_New_Forces(int Ti);

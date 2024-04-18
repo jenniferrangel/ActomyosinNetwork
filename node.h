@@ -122,6 +122,7 @@ class Actin_Node: public Node, public enable_shared_from_this<Actin_Node>{
     //Functions
     //=======================
     void sound_Off_Node_Info();
+    void sound_Off_Neighbors();
 
     //***Functions for calculating forces
     void calculate_Forces(int Ti);
@@ -129,6 +130,13 @@ class Actin_Node: public Node, public enable_shared_from_this<Actin_Node>{
     //Linear spring forces
     Coord calc_Linear_Force();
     Coord linear_Spring_Equation(shared_ptr<Actin_Node> node);
+
+    //Bending spring force at every node triplet
+    Coord calc_Bending_Force();
+    Coord bending_Force_Equation_Center();
+    Coord bending_Force_Equation_Left();
+    Coord bending_Force_Equation_Right();
+
 
 };
 

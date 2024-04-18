@@ -296,6 +296,29 @@ void Network::sound_Off_All_Node_Info(){
     return;
 }
 
+void Network::sound_Off_Neighbors(){
+    cout << "NEIGHBORS: " << endl;
+    cout << "***********************************************" << endl;
+
+    shared_ptr<Filament> curr;
+    vector<shared_ptr<Actin_Node>> actins;
+
+    for(unsigned int i = 0; i < filaments.size(); i++){
+        curr = filaments.at(i);
+        cout << "Filament #: " << curr->get_Filament_Num()<< endl;
+
+        curr->get_Actin_Nodes_Vec(actins);
+
+        for(unsigned int j = 0; j < actins.size(); j++){
+            actins.at(j)->sound_Off_Neighbors();
+        }
+    }
+
+    cout << "***********************************************" << endl;
+
+    return;
+}
+
 //***Calculates forces acting on each filament node***//
 void Network::calculate_New_Forces(int Ti){
    //#pragma omp parallel for schedule(static,1)

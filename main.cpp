@@ -79,9 +79,9 @@ int main(int argc, char* argv[]){
 
     //start the random number generator
     //*****************************************************
-    std::random_device rd;
-	std::mt19937 gen(rd());
-	srand(time(0));
+    std::random_device rd;    //gives a random seed from operating system
+	std::mt19937 gen(rd());  //Standard mersenne_twister_engine seeded with rd()
+	srand(time(0));          //ensures that the seed value is different each time the program is run
     
     //instantiate the network: making the filaments and their respective nodes
     //*****************************************************
@@ -100,6 +100,7 @@ int main(int argc, char* argv[]){
 
     //for double-checking purposes
     actomyosin_Network.sound_Off_All_Node_Info();
+    actomyosin_Network.sound_Off_Neighbors();
 
     //Variables for outputs
     //*****************************************************
@@ -138,7 +139,7 @@ int main(int argc, char* argv[]){
     //Start the loop
     //*****************************************************
     int Ti = 0;
-    int final_time = 10;
+    int final_time = 3;
 
     while(Ti < final_time){
         cout << "Entered while loop" << endl;
@@ -154,6 +155,9 @@ int main(int argc, char* argv[]){
         cout << "Updating locations..." << endl;
         actomyosin_Network.update_Positions(Ti);
         cout << "Locations updated!!" << endl;
+
+        //For double checking purposes
+        actomyosin_Network.sound_Off_Neighbors();
         
 
         //Print vtk files and to DataOutput
