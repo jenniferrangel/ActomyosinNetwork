@@ -7,6 +7,7 @@
 #include <cmath>
 #include <memory>
 #include <algorithm>
+#include <random>
 //=========================
 #include "params.h"
 #include "coord.h"
@@ -233,10 +234,15 @@ void Actin_Node::calculate_Forces(int Ti){
     cout << "F_bending = " << F_bending << endl;
 
     //------Stochastic/random force------
+    cout <<"Stochastic/random force being calculated..." << endl;
+    Coord F_stoch = calc_Stochastic_Force();
+    cout << "F_stoch = " << F_stoch << endl;
 
 
     //total force actin on node
-    new_total_force = F_linear + F_bending;
+    new_total_force = F_linear + F_bending + F_stoch;
+
+    cout << "Total force = " << F_linear << " + " << F_bending << " + " << F_stoch << endl;
 
     return;
 }
@@ -474,6 +480,45 @@ Coord Actin_Node::bending_Force_Equation_Right(){
 
     return F_right;
 
+}
+
+//***Stochastic force
+Coord Actin_Node::calc_Stochastic_Force(){
+    Coord F_random;
+
+    //Mean and standard deviation of normal distribution
+    double mean = 0.0;
+    double stddev = 1.0;
+
+    //generate coord with normally distributed random numbers
+    double rand_num1 = get_Random_Number(mean, stddev);
+    cout << "rand_num1 = " << rand_num1 << endl;
+    double rand_num2 = get_Random_Number(mean, stddev);
+    cout << "rand_num2 = " << rand_num2 << endl;
+
+    Coord force = Coord(rand_num1, rand_num2);
+    cout << "random coord" << force << endl;
+
+    //now calculate the force equation
+    double drag = get_Drag_Coeff();
+    double constant = sqrt((2*kB*TEMPERATURE*drag)/(dt));
+
+    F_random = force*constant;
+    //F_random = force*sqrt((2*kB*TEMPERATURE*drag)/(dt));
+
+    cout << "F_random = " << force << " * " << constant << " = " << F_random << endl;
+    
+    return F_random;
+}
+
+double Actin_Node::get_Random_Number(double mean, double stddev){
+    double rand_num;
+    // cout << "mean = " << mean << endl;
+    // cout << "stddev = " << stddev << endl;
+
+    rand_num = this->get_My_Filament()->get_Network()->get_Normally_Distributed_Random_Number(mean, stddev);
+    
+    return rand_num;
 }
 
 

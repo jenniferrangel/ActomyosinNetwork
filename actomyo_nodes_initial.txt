@@ -5,3 +5,17 @@ Node:0,0
 Node:0.4,1
 Node:0.8,0
 End_Filament:
+
+FilamentNumber:1
+FirstIsBardedEnd:1
+LastIsBarbedEnd:0
+Node:2,0
+Node:2.3,0.5
+Node:2.7,0.5
+Node:3.0,1
+Node:3.2,0.5
+Node:3.5,0
+Node:3.8,0
+End_Filament:
+
+

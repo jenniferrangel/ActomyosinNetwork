@@ -139,25 +139,27 @@ int main(int argc, char* argv[]){
     //Start the loop
     //*****************************************************
     int Ti = 0;
-    int final_time = 3;
+    int final_time = 4;
 
     while(Ti < final_time){
         cout << "Entered while loop" << endl;
 
+        //if node positions are updated before vtk and data output files printed, we won't get the info for the initial condition
+
         //Calculate the forces on filament nodes
         //*****************************************************
-        cout << "Calculating forces..." << endl;
+        /* cout << "Calculating forces..." << endl;
         actomyosin_Network.calculate_New_Forces(Ti);
-        cout << "Forces calculated!" << endl;
+        cout << "Forces calculated!" << endl; */
 
         // update filament node positions
         //*****************************************************
-        cout << "Updating locations..." << endl;
+/*         cout << "Updating locations..." << endl;
         actomyosin_Network.update_Positions(Ti);
         cout << "Locations updated!!" << endl;
 
         //For double checking purposes
-        actomyosin_Network.sound_Off_Neighbors();
+        actomyosin_Network.sound_Off_Neighbors(); */
         
 
         //Print vtk files and to DataOutput
@@ -227,6 +229,24 @@ int main(int argc, char* argv[]){
             out5++;
 
         }
+
+        //This allows file '0' i.e. at time = 0 to have the info for the initial condition
+
+        //Calculate the forces on filament nodes
+        //*****************************************************
+        cout << "Calculating forces..." << endl;
+        actomyosin_Network.calculate_New_Forces(Ti);
+        cout << "Forces calculated!" << endl;
+
+        // update filament node positions
+        //*****************************************************
+        cout << "Updating locations..." << endl;
+        actomyosin_Network.update_Positions(Ti);
+        cout << "Locations updated!!" << endl;
+
+        //For double checking purposes
+        actomyosin_Network.sound_Off_Neighbors();
+        
 
         Ti++;
 

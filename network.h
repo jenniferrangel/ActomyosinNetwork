@@ -44,6 +44,7 @@ class Network{
         void update_Num_Filaments(shared_ptr<Filament>& new_Filament);  //updates # filaments but also filaments vector
         int get_Num_Filaments(){return num_filaments;}
         mt19937 get_Random_Generator(){return gen;}
+        double get_Normally_Distributed_Random_Number(double mean, double stddev);
 
         //Functions:
         //==========================

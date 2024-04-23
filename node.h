@@ -137,6 +137,10 @@ class Actin_Node: public Node, public enable_shared_from_this<Actin_Node>{
     Coord bending_Force_Equation_Left();
     Coord bending_Force_Equation_Right();
 
+    //Random force
+    Coord calc_Stochastic_Force();
+    double get_Random_Number(double mean, double stddev);
+
 
 };
 

@@ -265,6 +265,13 @@ void Network::update_Num_Filaments(shared_ptr<Filament>& new_Filament){
    return;
 }
 
+//Generate and return a random number from a normal distribution based on the specified mean and standard deviation
+double Network::get_Normally_Distributed_Random_Number(double mean, double stddev){
+    std::normal_distribution<double> distribution(mean,stddev);
+	double random_num = distribution(this->gen);
+	return random_num;
+}
+
 //=======================================================
 // Functions
 //=======================================================
