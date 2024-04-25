@@ -111,7 +111,9 @@ class Filament: public enable_shared_from_this<Filament> {
 
     //***Functions for VTK output
     void print_VTK_Points(ofstream& ofs, int& count);
-    void print_VTK_BarbedEnds(ofstream&ofs);
+    void update_Node_VTK_Indices(int& id);
+    void print_VTK_BarbedEnds(ofstream& ofs);
+    void print_VTK_connections(ofstream& ofs);
 
 
     //***Functions for data output

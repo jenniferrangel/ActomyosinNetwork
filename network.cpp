@@ -352,32 +352,57 @@ void Network::update_Positions(int Ti){
 //***Functions for VTK output****//
 void Network::print_VTK_File(ofstream& ofs){
 
+    //Update the index of the nodes
+    update_VTK_Indices();
+
     ofs << "# vtk DataFile Version 3.0" << endl;
 	ofs << "Point representing Actomyosin Network model" << endl;
 	ofs << "ASCII" << endl << endl;
 	ofs << "DATASET UNSTRUCTURED_GRID" << endl;
 
-    //Need the total number of points/nodes for all filaments
+    //Need the total number of points/nodes for all filaments and number of edges/connections per filament
     int num_Points = 0;
+    int num_Edges = 0; 
 
     for(unsigned int i = 0; i < filaments.size(); i++){
         num_Points += filaments.at(i)->get_Num_Actin_Nodes();
+        num_Edges += filaments.at(i)->get_Num_Actin_Nodes() - 1; //always 1 less than total # nodes per filament
+        cout << "number of edges = " << num_Edges << endl;
     }
 
     //The node/point positions
     ofs << "POINTS " << num_Points << " float64" << endl;
 
-    vector<int> start_points;
-	vector<int> end_points;
+    // vector<int> start_points;
+	// vector<int> end_points;
+    //for double-checking purposes so we know it is getting a total # nodes
 	int count = 0;
 
     for(unsigned int i = 0; i < filaments.size(); i++){
-        start_points.push_back(count);
+        //start_points.push_back(count);
         filaments.at(i)->print_VTK_Points(ofs,count);
-        end_points.push_back(count - 1);
+        //end_points.push_back(count - 1);
+    }
+    //cout << "count = " << count << endl;
+
+    ofs << endl;
+
+    //to visualize how the nodes are connected i.e. the springs connecting nodes:
+    ofs << "CELLS " << num_Edges << " " << 3*num_Edges << endl;
+    for(unsigned int i = 0; i < filaments.size(); i++){
+        filaments.at(i)->print_VTK_connections(ofs);
     }
 
     ofs << endl;
+
+    ofs << "CELL_TYPES " << num_Edges << endl;
+    for(int i = 0; i < num_Edges; i++){
+        //type for adhesion relationship: in this case a vtk_line ._____.
+        ofs << 3 << endl;
+    }
+
+    ofs << endl;
+
 
 /*     //To visualized the barbed end
     ofs << "BARBED_END " << filaments.size() << " float64" << endl;
@@ -387,6 +412,22 @@ void Network::print_VTK_File(ofstream& ofs){
     }
 
     ofs << endl; */
+
+    return;
+
+}
+
+void Network::update_VTK_Indices(){
+    cout << "Updating VTK indices..." << endl;
+
+    int id = 0;
+    //iterate through the filaments to reassign vtk id's (starting at 0)
+    for (unsigned int i = 0; i < filaments.size(); i++){
+        filaments.at(i)->update_Node_VTK_Indices(id);
+        //cout << "ID = " << id << endl;
+    }
+
+    //cout << "final index = " << id << endl;
 
     return;
 

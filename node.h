@@ -28,6 +28,7 @@ class Node{
         Coord new_total_force; //every node has a total force (sum of spring, bending, stochastic, etc forces) acting on it
         double drag_coeff; //although they have different values, there is an actin damping coeff and a myosin damping coeff
         int my_node_rank; //which node am I; Ex: 1st, 2nd, 3rd in the filament
+        int vtk_index;    //every node has a vtk ID
         
     public:
     //functions that will/can be performed on all types of nodes
@@ -47,6 +48,8 @@ class Node{
     virtual void set_Drag_Coeff(double drag);
     virtual int get_My_Node_Rank(){return my_node_rank;}
     virtual void set_My_Node_Rank(int node_num);
+    virtual int get_VTK_Index(){return vtk_index;}
+    virtual void update_VTK_Index(int id);
 
     //Functions
     //=======================

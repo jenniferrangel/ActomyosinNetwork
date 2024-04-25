@@ -42,6 +42,11 @@ void Node::set_My_Node_Rank(int node_num){
     return;
 }
 
+void Node::update_VTK_Index(int id){
+    vtk_index = id;
+    return;
+}
+
 //==============================
 //Functions
 //==============================

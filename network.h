@@ -61,6 +61,7 @@ class Network{
         //Printing and dataoutput functions
         //***Functions for VTK output
         void print_VTK_File(ofstream& ofs);
+        void update_VTK_Indices();
 
         //***Printing data output
         void locations_Output(ofstream& ofs, int Ti);

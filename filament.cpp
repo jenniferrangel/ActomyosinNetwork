@@ -369,6 +369,47 @@ void Filament::print_VTK_Points(ofstream& ofs, int& count){
     return;
 }
 
+void Filament::update_Node_VTK_Indices(int& id){
+    for(unsigned int i = 0; i < actin_nodes.size(); i++){
+        actin_nodes.at(i)->update_VTK_Index(id);
+        cout << "id = " << id << endl;
+        id++;
+    }
+
+    return;
+}
+
+void Filament::print_VTK_connections(ofstream& ofs){
+    int my_ID;
+    int nhb_ID;
+  
+    vector<shared_ptr<Actin_Node>> actins; //will store actin nodes here
+    this->get_Actin_Nodes_Vec(actins);
+    shared_ptr<Actin_Node> curr_node = NULL;
+    shared_ptr<Actin_Node> neighbor = NULL;
+
+    for(unsigned int i = 0; i < actins.size(); i++){
+        curr_node = actins.at(i);
+        neighbor = actins.at(i)->get_Right_Neighbor();
+
+        if(curr_node != neighbor){
+            cout << "curr_node = " << curr_node->get_Node_Location() << endl;
+            cout << "neighbor = "  << neighbor->get_Node_Location() << endl;
+
+            my_ID = curr_node->get_VTK_Index();
+            nhb_ID = neighbor->get_VTK_Index();
+            ofs.flush();
+            ofs << 2 << " " << my_ID << " " << nhb_ID << endl;
+
+            cout << "my_ID = " << my_ID << endl;
+            cout << "nhb_ID = " << nhb_ID << endl;
+        }
+
+    }
+
+    return;
+}
+
 void Filament::print_VTK_BarbedEnds(ofstream&ofs){
     Coord barbed = get_Barbed_End();
     ofs << barbed.get_X() << ' ' << barbed.get_Y() << ' ' << 0 << endl;
