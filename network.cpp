@@ -360,6 +360,7 @@ void Network::print_VTK_File(ofstream& ofs){
 	ofs << "ASCII" << endl << endl;
 	ofs << "DATASET UNSTRUCTURED_GRID" << endl;
 
+    //Set the structure:
     //Need the total number of points/nodes for all filaments and number of edges/connections per filament
     int num_Points = 0;
     int num_Edges = 0; 
@@ -403,15 +404,16 @@ void Network::print_VTK_File(ofstream& ofs){
 
     ofs << endl;
 
-
-/*     //To visualized the barbed end
-    ofs << "BARBED_END " << filaments.size() << " float64" << endl;
-    ofs << "LOOKUP_TABLE discrete_colors" << endl;
+    //Set the attributes:
+    ofs << "POINT_DATA " << num_Points << endl;
+    //To visualized the barbed end
+    ofs << "SCALARS Barbed_End int " << 1 << endl;
+    ofs << "LOOKUP_TABLE default" << endl;
     for(unsigned int i = 0; i < filaments.size(); i++){
         filaments.at(i)->print_VTK_BarbedEnds(ofs);
     }
 
-    ofs << endl; */
+    ofs << endl;
 
     return;
 

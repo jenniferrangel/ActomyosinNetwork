@@ -102,6 +102,7 @@ class Filament: public enable_shared_from_this<Filament> {
     //Functions
     //=======================
     void update_Actin_Angles();
+    void update_Barbed_End_Pos();
 
     //***Calculate forces
     void calculate_New_Forces(int Ti);

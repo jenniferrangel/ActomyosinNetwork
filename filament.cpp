@@ -320,6 +320,31 @@ void Filament::update_Actin_Angles(){
     return;
 }
 
+void Filament::update_Barbed_End_Pos(){
+    //get polarity of first and last node
+    bool firstNodeBarbed = this->get_First_Node_Polarity();
+    bool lastNodeBarbed = this->get_Last_Node_Polarity();
+
+    //access the nodes in the filament
+    vector<shared_ptr<Actin_Node>> actins; //will store actin nodes here
+    this->get_Actin_Nodes_Vec(actins);
+
+    Coord firstNode;
+    Coord lastNode;
+
+    if(firstNodeBarbed){
+        firstNode = actins.at(0)->get_Node_Location();
+        this->barbedEnd = firstNode;
+        cout << "Updated barbed end = " << get_Barbed_End() << endl;
+    }
+    else if(lastNodeBarbed){
+        lastNode = actins.at(actins.size() - 1)->get_Node_Location();
+        this->barbedEnd = lastNode;
+        cout << "Updated barbed end = " << get_Barbed_End() << endl;
+    }
+    return;
+}
+
 //***Calculate forces***//
 void Filament::calculate_New_Forces(int Ti){
     vector<shared_ptr<Actin_Node>> actins; //will store actin nodes here
@@ -352,7 +377,11 @@ void Filament::update_Node_Positions(int Ti){
             }
         //}
 
+    //angles need to be recalculated according to the new positions
     update_Actin_Angles();
+
+    //the barbed end position also needs to be updated
+    update_Barbed_End_Pos();
     
     return;
 
@@ -412,7 +441,17 @@ void Filament::print_VTK_connections(ofstream& ofs){
 
 void Filament::print_VTK_BarbedEnds(ofstream&ofs){
     Coord barbed = get_Barbed_End();
-    ofs << barbed.get_X() << ' ' << barbed.get_Y() << ' ' << 0 << endl;
+
+    for(unsigned int i = 0; i < actin_nodes.size(); i++){
+        Coord location = actin_nodes.at(i)->get_Node_Location();
+        if (barbed == location){
+            ofs << 1 << endl;
+        }else{
+            ofs << 0 << endl;
+        }
+        
+    }
+    //cout << "barbed end = " << barbed.get_X() << " " << barbed.get_Y() << " " << 0 << endl;
 
     return;
 
