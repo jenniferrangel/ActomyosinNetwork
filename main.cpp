@@ -94,6 +94,7 @@ int main(int argc, char* argv[]){
     //***if the initial condition file already has the position of all nodes:
     //input file that already has all of the nodes predefined and PREDEFINED_INITIAL_NODES=true
     string init_network_with_nodes = "actomyo_nodes_initial.txt";
+    //string init_network_with_nodes = "network7.txt";
     Network actomyosin_Network(init_network_with_nodes,gen,PREDEFINED_INITIAL_NODES);
 
     cout << "Finished creating the network" << endl;
@@ -139,7 +140,7 @@ int main(int argc, char* argv[]){
     //Start the loop
     //*****************************************************
     int Ti = 0;
-    int final_time = 4;
+    int final_time = 60;
 
     while(Ti < final_time){
         cout << "Entered while loop" << endl;
