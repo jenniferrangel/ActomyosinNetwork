@@ -1,8 +1,7 @@
 %this is a file that reads in a txt file and plots it
 
 % Open the text file for reading
-fid = fopen('network7.txt', 'r');    %insert file you want to parse
-%fid = fopen('network3.txt', 'r');    %insert file you want to parse
+fid = fopen('network_nodes.txt', 'r');    %insert file you want to parse
 
 % Initialize variables
 node_data = []; % Matrix to store node coordinates

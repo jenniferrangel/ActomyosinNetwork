@@ -3,7 +3,7 @@
 %%Parse through the file and save data into matrix
 %==========================================================================
 % Open the text file for reading
-fid = fopen('network_nodes6.txt', 'r');    %insert file you want to parse
+fid = fopen('network_nodes.txt', 'r');    %insert file you want to parse
 
 % Initialize variables
 fil_num_data = []; %Matrix to store filament number
@@ -173,7 +173,7 @@ end
 %%Print new txt file with updated nodes
 %==========================================================================
 % Open the file for writing
-fid = fopen('network_nodes6_updated5.txt', 'w');
+fid = fopen('network_updated.txt', 'w');
 
 for i = 1:length(num_nodes_per_fil_matrix)
 

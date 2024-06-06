@@ -33,6 +33,15 @@ Initial conditions (IC):
         - set PREDEFINED_INITIAL_NODES = true if using IC (2) 
         - uncomment/comment respective lines under the section "//instantiate the network:"
 
+    Can test different network configurations: Open folder "Make_Actomyosin_Network_Scripts"
+        - This folder contains 3 different subfolders
+            * Network_Straight_Filaments
+            * Network_Random_Alignment
+            * Network_Vertical_Horizontal_Random_Alignment
+        - Each subfolder includes
+            *sample txt file with a network
+            *matlab code to generate each type of network 
+
 ***********************************************************************
 
 To compile and run the code use the following commands:

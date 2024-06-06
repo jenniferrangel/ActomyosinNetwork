@@ -12,7 +12,7 @@ num_filaments = 20;
 %number of nodes per filament
 num_nodes = 6;            %if all filaments have the same # nodes
 
-random_num_nodes = 0;     %set to 1 if each filament will have a diff/random # nodes and change the max # nodes
+random_num_nodes = 1;     %set to 1 if each filament will have a diff/random # nodes and change the max # nodes
 min_nodes = 3;            %the min should always be 3
 max_nodes = 10;
 
@@ -46,7 +46,7 @@ seed_matrix_y = zeros(num_filaments,1);
 %%Generate the network & Print into a txt file:
 %=====================================================================
 % Open the file for writing
-fid = fopen('network_nodes8.txt', 'w');
+fid = fopen('network_nodes.txt', 'w');
 
 for i = 1:num_filaments
     % Generate random number for the polarity
