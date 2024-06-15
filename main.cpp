@@ -22,6 +22,7 @@
 #include "node.h"
 #include "filament.h"
 #include "network.h"
+#include "myosin.h"
 //#include "rand.h"
 //==============================
 
@@ -45,6 +46,8 @@ double ACTIN_PERSISTENCE_LEN = 10.0;    //(microns)    //(microns)
 //============================================
 double F_MYO_PULLING = 4.0;        //(pN) myosin pulling force
 double MYO_DRAG_COEFF = 400.0;     //(pN s/micron) myosin drag coefficient
+double MYOSIN_SPRING_EQUI_LEN = 0.15; //NEED TO FIND ACTUAL VALUE
+double K_LINEAR_STIFF_MYOSIN = 600.0; //NEED TO FIND VALUE SO DOESNT STRETCH
 
 //Actomyosin parameters:
 //============================================
@@ -59,7 +62,6 @@ double dt = 0.0005;                     //time step (seconds)
 bool PREDEFINED_INITIAL_NODES = true;
 int PRINT_VTKS = true; // ./batchGenerator -par -PRINT <1 or 0>
 int NUM_STEPS_PER_FRAME = 1;
-
 
 
 int main(int argc, char* argv[]){
@@ -93,8 +95,8 @@ int main(int argc, char* argv[]){
 
     //***if the initial condition file already has the position of all nodes:
     //input file that already has all of the nodes predefined and PREDEFINED_INITIAL_NODES=true
-    string init_network_with_nodes = "actomyo_nodes_initial.txt";
-    //string init_network_with_nodes = "network7.txt";
+    //string init_network_with_nodes = "actomyo_nodes_initial.txt";
+    string init_network_with_nodes = "actomyosin_net_nodes_initial.txt";
     Network actomyosin_Network(init_network_with_nodes,gen,PREDEFINED_INITIAL_NODES);
 
     cout << "Finished creating the network" << endl;
@@ -140,7 +142,7 @@ int main(int argc, char* argv[]){
     //Start the loop
     //*****************************************************
     int Ti = 0;
-    int final_time = 60;
+    int final_time = 4;
 
     while(Ti < final_time){
         cout << "Entered while loop" << endl;

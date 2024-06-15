@@ -14,6 +14,7 @@
 #include "params.h"
 #include "coord.h"
 #include "filament.h"
+#include "myosin.h"
 #include "network.h"
 //=========================
 // Public Member Functions for network.cpp
@@ -114,7 +115,7 @@ Network::Network(string filename, mt19937 gen, bool predefined_nodes){
         string temp;
         char garbage;
 
-        //variables to initialize a filament
+        //variables to initialize a actin filament and myosin mini-filament
         int fil_num;
         bool firstIsBarbed;
         bool lastIsBarbed;
@@ -122,6 +123,11 @@ Network::Network(string filename, mt19937 gen, bool predefined_nodes){
         double x;
         double y;
         Network* my_network = this;
+
+        int myo_num;
+        vector<Coord> myoNodes;
+        double x_myo;
+        double y_myo;
 
         //parse through the input file line by line and read into "line"
         while(getline(ifs,line)){
@@ -131,12 +137,15 @@ Network::Network(string filename, mt19937 gen, bool predefined_nodes){
 
             if (temp == "FilamentNumber"){
                 ss >> fil_num;
+                cout << "Filament num = " << fil_num << endl;
             }
             else if(temp == "FirstIsBardedEnd"){
-                ss >> firstIsBarbed;            
+                ss >> firstIsBarbed;
+                cout << firstIsBarbed << endl;            
             }
             else if(temp == "LastIsBarbedEnd"){
                 ss >> lastIsBarbed;
+                cout << lastIsBarbed << endl;
             }
             else if(temp == "Node"){
                 cout << "Saving node position into vector" << endl;
@@ -161,6 +170,33 @@ Network::Network(string filename, mt19937 gen, bool predefined_nodes){
                 nodes.clear();
                 cout << "Actin filament created!" << endl;
             }
+            else if(temp == "MyosinNumber"){
+                ss >> myo_num;  
+                cout << "MyosinNumber = " << myo_num << endl;          
+            }
+            else if(temp == "MyoNode"){
+                cout << "Saving myosin node position into vector" << endl;
+                ss >> x_myo >> garbage >> y_myo;
+                cout << x_myo << "," << y_myo << endl;
+                Coord loc(x_myo,y_myo);
+                myoNodes.push_back(loc);
+                cout << loc.get_X() << "," << loc.get_Y() << endl;
+            }
+            else if(temp == "End_Myosin"){
+                //input data is used to create a new myosin mini-filament. New myosin is pushed onto vector that holds all myosin minifilaments in the network.
+                cout << "Making a myosin mini-filament..." << endl;
+
+                shared_ptr<Myosin> curr = make_shared<Myosin>(my_network, myo_num);
+                //give the myosin mini-filaments its nodes:
+                curr->make_myosin_nodes(myoNodes);
+                num_myosins++;
+                //push myosin mini-filament onto vector that holds all myosins in tissue
+                myosins.push_back(curr);
+
+                //to avoid carrying nodes from other myosins reset the nodes vector
+                myoNodes.clear();
+                cout << "Myosin mini-filament created!" << endl;
+            }
             ss.clear();
         }
         ifs.close();
@@ -172,6 +208,7 @@ Network::Network(string filename, mt19937 gen, bool predefined_nodes){
         //     cout << "First node is barbed end: " << firstIsBarbed << endl;
         // }
         // cout << "Last node is barbed end: " << lastIsBarbed << endl;
+        cout << "My number of myosin mini-filaments is " << get_Num_Myosins() << endl;
 
     }else{
         cout << "Need to create the nodes in the network" << endl;
@@ -270,6 +307,17 @@ double Network::get_Normally_Distributed_Random_Number(double mean, double stdde
     std::normal_distribution<double> distribution(mean,stddev);
 	double random_num = distribution(this->gen);
 	return random_num;
+}
+
+void Network::get_Myosins(vector<shared_ptr<Myosin>>& myosins){
+    myosins = this->myosins;
+    return;
+}
+
+void Network::update_Num_Myosins(shared_ptr<Myosin>& new_Myosin){
+    num_myosins++;
+    myosins.push_back(new_Myosin);
+    return;
 }
 
 //=======================================================

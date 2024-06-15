@@ -22,6 +22,8 @@ extern double ACTIN_PERSISTENCE_LEN;
 //============================================
 extern double F_MYO_PULLING;
 extern double MYO_DRAG_COEFF;
+extern double MYOSIN_SPRING_EQUI_LEN;
+extern double K_LINEAR_STIFF_MYOSIN;
 
 //Actomyosin parameters:
 //============================================

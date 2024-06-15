@@ -8,6 +8,7 @@
 class Actin_Node;
 class Myosin_Node;
 class Filament;
+class Myosin;
 //=====================
 // Include Declarations
 #include <iostream>
@@ -149,6 +150,47 @@ class Actin_Node: public Node, public enable_shared_from_this<Actin_Node>{
 
 //Myosin class:
 //==============================
+class Myosin_Node: public Node, public enable_shared_from_this<Myosin_Node>{
+    protected:
+    //variables shared by myosin nodes
+    shared_ptr<Myosin> my_myosin_minifilament;
+    shared_ptr<Myosin_Node> neighboring_pair;   //every mini-filament is composed of 2 nodes, so each node has it's pair i.e. its neighbor
+
+    //needed for the linear spring force calculation:
+    double k_linear_myosin;
+    double myosin_spring_equi_len;
+
+    public:
+    //Constructors:
+    //=======================
+    Myosin_Node(Coord location, shared_ptr<Myosin> my_myosin_minifilament);
+    Myosin_Node(Coord location, shared_ptr<Myosin> my_myosin_minifilament, shared_ptr<Myosin_Node> nbring_pair);
+
+    //Destructor
+    //=======================
+    ~Myosin_Node();
+
+    //Getters & setters
+    //=======================
+    shared_ptr<Myosin> get_My_Myosin(){return my_myosin_minifilament;}
+    void set_My_Myosin(shared_ptr<Myosin> minifilament);
+
+    //set & get the neighboring myosin node pair
+    shared_ptr<Myosin_Node> get_Neighboring_Pair(){return neighboring_pair;}
+    void set_Neighboring_Pair(shared_ptr<Myosin_Node> nbh_pair);
+
+    //set & get the linear spring constant and equilibrium length:
+    double get_K_Linear_Myosin(){return k_linear_myosin;}
+    void set_K_Linear_Myosin(double k_linear);
+    double get_Myosin_Equi_Len(){return myosin_spring_equi_len;}
+    void set_Myosin_Equi_Len(double equi_len);
+
+    //Functions
+    //=======================
+    void sound_Off_Neighboring_Pair();
+
+};
+
 
 //===========================
 #endif 

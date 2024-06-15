@@ -6,8 +6,8 @@ CXXFLAGS= -Wall -g -O3
 # Targets needed to bring the executable up to date
 all: program 
 
-program:folder main.o coord.o node.o filament.o network.o
-	$(CXX) $(CXXFLAGS) -o program main.o coord.o node.o filament.o network.o
+program:folder main.o coord.o node.o filament.o myosin.o network.o
+	$(CXX) $(CXXFLAGS) -o program main.o coord.o node.o filament.o myosin.o network.o
 folder: 
 		mkdir -p ./DataOutput ./Animation
 main.o: main.cpp
@@ -21,6 +21,9 @@ node.o: node.cpp
 
 filament.o: filament.cpp
 	$(CXX) $(CXXFLAGS) -c filament.cpp
+
+myosin.o: myosin.cpp
+	$(CXX) $(CXXFLAGS) -c myosin.cpp
 
 network.o: network.cpp
 	$(CXX) $(CXXFLAGS) -c network.cpp

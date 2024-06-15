@@ -15,6 +15,7 @@
 #include "filament.h"
 #include "network.h"
 #include "externs.h"
+#include "myosin.h"
 //=========================
 
 //==========================================================
@@ -541,14 +542,55 @@ Actin_Node::~Actin_Node(){
 //==============================
 // Constructors
 //==============================
+Myosin_Node::Myosin_Node(Coord location, shared_ptr<Myosin> my_myosin_minifilament) : Node(location){
+    this->my_myosin_minifilament = my_myosin_minifilament;
+}
+
+Myosin_Node::Myosin_Node(Coord location, shared_ptr<Myosin> my_myosin_minifilament, shared_ptr<Myosin_Node> nbring_pair) : Node(location){
+    this->my_myosin_minifilament = my_myosin_minifilament;
+    this-> neighboring_pair = nbring_pair;
+}
 
 //==============================
 //Getters and setters:
 //==============================
+void Myosin_Node::set_My_Myosin(shared_ptr<Myosin> minifilament){
+    this->my_myosin_minifilament = minifilament;
+    return;
+}
+
+void Myosin_Node::set_Neighboring_Pair(shared_ptr<Myosin_Node> nbh_pair){
+    this->neighboring_pair = nbh_pair;
+    return;
+}
+
+void Myosin_Node::set_K_Linear_Myosin(double k_linear){
+    this->k_linear_myosin = k_linear;
+    return;
+}
+
+void Myosin_Node::set_Myosin_Equi_Len(double equi_len){
+    this->myosin_spring_equi_len = equi_len;
+    return;
+}
+
+//==============================
+//Functions:
+//==============================
+void Myosin_Node::sound_Off_Neighboring_Pair(){
+    cout << "Myosin node #: " << get_My_Node_Rank() << endl;
+    cout << "Location: " << get_Node_Location() << endl;
+    cout << "My neighboring pair: " << get_Neighboring_Pair()->get_Node_Location() << endl;
+
+    return;
+}
 
 //==============================
 //Destructor:
 //==============================
+Myosin_Node::~Myosin_Node(){
+    cout << "Myosin node destructor called!" << endl;
+}
 
 //==========================================================
 // End of node.cpp

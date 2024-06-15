@@ -24,6 +24,12 @@ Running:
 
 *************************************************************************************************
 
+**************************************
+**************************************
+Actin Filaments
+**************************************
+**************************************
+
 Actin filaments:
     * each actin filament has a plus (barbed) and pointed end. This could be the first or last node
         O--------O--------O          OR            O--------O--------O
@@ -60,7 +66,7 @@ Actin filaments:
 
 *************************************************************************************************
 
-Neighbors for first and last nodes:
+Neighbors for first and last actin filament nodes:
     *the first node does not have a left neighbor, so we set the neighbor equal to the node
         * first node location = first node's left neighbor location
         *Ex: node = (0,0) then left neighbor = (0,0)
@@ -132,4 +138,19 @@ Bending force:
         - theta_right = 0                           since sqrt(1-cos^2(0)) = sqrt (1-1) = 0 and NO zero in denominator  
         - theta_right = theta_equi                  numerator = 0 and sqrt (1-cos^2(pi)) = sqrt(1-(-1)) = 0 NO zero in denominator     
         - if right_nbr == my_loc                    this means it's the LAST node which has NO right neighbor
-        - if right_nbr -> right_nbr == right_nbr    this is the second to last node who's right neighbor is the last node and the last node has NO angle and NO right nbr                                                                        
+        - if right_nbr -> right_nbr == right_nbr    this is the second to last node who's right neighbor is the last node and the last node has NO angle and NO right nbr     
+*************************************************************************************************
+
+**************************************
+**************************************
+Non-muscle Myosin II Mini-filaments
+**************************************
+**************************************
+
+Myosin:
+    *each myosin mini-filament is composed of 2 nodes connected by a linear spring
+            O--------O
+       (node i)     (node j)
+    *each node will have a neighboring_pair
+        -node i's nbr pair is node j
+        -node j's nbr pair is node i

@@ -16,6 +16,7 @@
 //#include "rand.h"
 #include "filament.h"
 #include "network.h"
+#include "myosin.h"
 #include <boost/random.hpp>
 //===================
 

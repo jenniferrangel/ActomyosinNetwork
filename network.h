@@ -18,6 +18,7 @@
 #include "node.h"
 #include "filament.h"
 #include "externs.h"
+#include "myosin.h"
 #include <boost/random.hpp>
 #include <boost/random/normal_distribution.hpp>
 //=========================
@@ -27,8 +28,11 @@
 class Network{
     private:
         vector<shared_ptr<Filament>> filaments;
+        vector<shared_ptr<Myosin>> myosins;
 
         int num_filaments;
+        int num_myosins;
+
         mt19937 gen;
 
     public:
@@ -43,6 +47,11 @@ class Network{
         //set and get the number of actin filaments in the network:
         void update_Num_Filaments(shared_ptr<Filament>& new_Filament);  //updates # filaments but also filaments vector
         int get_Num_Filaments(){return num_filaments;}
+
+        void get_Myosins(vector<shared_ptr<Myosin>>& myosins);
+        void update_Num_Myosins(shared_ptr<Myosin>& new_Myosin);
+        int get_Num_Myosins(){return num_myosins;}
+
         mt19937 get_Random_Generator(){return gen;}
         double get_Normally_Distributed_Random_Number(double mean, double stddev);
 
