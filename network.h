@@ -77,6 +77,9 @@ class Network{
         void node_Data_Output(ofstream& ofs, int Ti);
         void filament_Data_Output(ofstream& ofs, int Ti);
         void network_Data_Output(ofstream& ofs, int Ti);
+        void locations_Myosin_Output(ofstream& ofs, int Ti);
+        void myosin_Node_Data_Output(ofstream& ofs, int Ti);
+        void Myosin_Minifilament_Data_Output(ofstream& ofs, int Ti);
 
         //Destructor:
         //==========================

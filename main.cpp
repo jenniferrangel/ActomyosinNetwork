@@ -77,7 +77,8 @@ int main(int argc, char* argv[]){
     //Folders to hold the Node, Filament and Network level data
     string node_data_folder = argv[3];
     string filament_data_folder = argv[4];
-    string network_data_folder = argv[5];
+    string myosin_data_folder = argv[5];
+    string network_data_folder = argv[6];
 
     //start the random number generator
     //*****************************************************
@@ -108,6 +109,7 @@ int main(int argc, char* argv[]){
     //Variables for outputs
     //*****************************************************
     //variables for vtk files
+    //========================
     int digits;
     string Filename;
     string initial = "/Actin_Filament";
@@ -117,15 +119,17 @@ int main(int argc, char* argv[]){
 	int out = 0;
 
     //variables for dataoutput
+    //========================
+    //For actin filaments:
     //int digits2;
 	string Locations; //this is the filename
-    string locations_initial = "/Locations_";
+    string locations_initial = "/Actin_Locations_";
     //string Number2;
 	ofstream ofs_loc;
 	int out2 = 0;
 
     string Node_Data;
-    string node_data_initial = "/Node_Data_";
+    string node_data_initial = "/Actin_Node_Data_";
     ofstream ofs_node_data;
     int out3 = 0;
 
@@ -134,6 +138,24 @@ int main(int argc, char* argv[]){
     ofstream ofs_filament_data;
     int out4 = 0;
 
+    //For myosin mini-filaments:
+    string Locations_Myosin; //this is the filename
+    string locations_initial_myo = "/Myosin_Locations_";
+    //string Number2;
+	ofstream ofs_loc_myosin;
+	int out6 = 0;
+
+    string Node_Data_Myosin;
+    string node_data_myosin_initial = "/Myosin_Node_Data_";
+    ofstream ofs_node_data_myosin;
+    int out7 = 0;
+
+    string Myosin_Data;
+    string myosin_data_initial = "/Myosin_MiniFilament_Data_";
+    ofstream ofs_myosin_data;
+    int out8 = 0;
+
+    //For actomyosin network:
     string Network_Data;
     string network_data_initial = "/Network_Data_";
     ofstream ofs_network_data;
@@ -199,6 +221,8 @@ int main(int argc, char* argv[]){
 
         //Data output from simulations
         if(Ti % NUM_STEPS_PER_FRAME == 0){
+            //Printing actin filament data info:
+            //===================================
             //Printing out the node locations to DataOutput
             Locations = locations_folder + locations_initial + to_string(out2) + ".txt";
             ofs_loc.open(Locations.c_str());
@@ -223,7 +247,34 @@ int main(int argc, char* argv[]){
             ofs_filament_data.close();
             out4++;
 
+            //Printing myosin mini-filament data info:
+            //===================================
+            //Printing out the myosin node locations to DataOutput
+            Locations_Myosin = locations_folder + locations_initial_myo + to_string(out6) + ".txt";
+            ofs_loc_myosin.open(Locations_Myosin.c_str());
+            cout << "Myosin Locations output file opened..." << endl;
+            actomyosin_Network.locations_Myosin_Output(ofs_loc_myosin, Ti);
+            ofs_loc_myosin.close();
+            out6++;
+
+            //Printing out the myosin node data 
+            Node_Data_Myosin = node_data_folder + node_data_myosin_initial + to_string(out7) + ".txt";
+            ofs_node_data_myosin.open(Node_Data_Myosin.c_str());
+            cout << "Myosin Node data output file opened..." << endl;
+            actomyosin_Network.myosin_Node_Data_Output(ofs_node_data_myosin, Ti);
+            ofs_node_data_myosin.close();
+            out7++;
+
+            //Printing out the myosin mini-filament data
+            Myosin_Data = myosin_data_folder + myosin_data_initial + to_string(out8) + ".txt";
+            ofs_myosin_data.open(Myosin_Data.c_str());
+            cout << "Myosin Mini-Filament data output file opened..." << endl;
+            actomyosin_Network.Myosin_Minifilament_Data_Output(ofs_myosin_data, Ti);
+            ofs_myosin_data.close();
+            out8++;
+
             //Printing out the network data
+            //===============================
             Network_Data = network_data_folder + network_data_initial + to_string(out5) + ".txt";
             ofs_network_data.open(Network_Data.c_str());
             cout << "Network data output file opened..." << endl;

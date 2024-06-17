@@ -133,6 +133,40 @@ void Myosin::get_Myosin_Nodes_Vec(vector<shared_ptr<Myosin_Node>>& myosins){
 //Functions:
 //==============================
 
+//***Calculate forces***//
+
+//***Update node positions via Langevin Equation***//
+
+//***Functions for VTK output****//
+
+//***Functions for data output***//
+//This function prints out the myosin node locations
+void Myosin::print_Myosin_Locations(ofstream& ofs, int Ti){
+    for(unsigned int i = 0; i < myosin_nodes.size(); i++){
+        Coord location = myosin_nodes.at(i)->get_Node_Location();
+        ofs << this->get_Myosin_Num() << ' ' << myosin_nodes.at(i)->get_My_Node_Rank() << ' '<< location.get_X() << ' ' << location.get_Y() << ' ' << 0 << endl;
+    }
+    return;
+}
+
+//This function prints out the node data
+void Myosin::print_Myosin_Node_Data(ofstream& ofs, int Ti){
+    for(unsigned int i = 0; i < myosin_nodes.size(); i++){
+        Coord location = myosin_nodes.at(i)->get_Node_Location();
+        Coord nbr_pair = myosin_nodes.at(i)->get_Neighboring_Pair()->get_Node_Location();
+        
+        ofs << this->get_Myosin_Num() << ' ' << myosin_nodes.at(i)->get_My_Node_Rank() << ' '<< location.get_X() << ' ' << location.get_Y() << ' ' << 0 << ' ' << nbr_pair.get_X() << ' ' << nbr_pair.get_Y() << ' ' << 0 << ' ' << myosin_nodes.at(i)->get_Drag_Coeff() << ' ' << myosin_nodes.at(i)->get_K_Linear_Myosin() << ' ' << myosin_nodes.at(i)->get_Myosin_Equi_Len() << endl;
+    }
+
+    return;
+}
+
+//This function prints out the myosin mini-filament data
+void Myosin::print_MiniFilament_Data(ofstream& ofs, int Ti){
+    ofs << this->get_Myosin_Num() << ' ' << this->get_Num_Myosin_Nodes() << endl;
+    return;
+}
+
 
 //==============================
 //Destructor:

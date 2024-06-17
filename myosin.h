@@ -83,7 +83,10 @@ class Myosin: public enable_shared_from_this<Myosin> {
 
 
     //***Functions for data output
-    //This function prints out the node locations
+    //This function prints out the myosin node locations
+    void print_Myosin_Locations(ofstream& ofs, int Ti);
+    void print_Myosin_Node_Data(ofstream& ofs, int Ti);
+    void print_MiniFilament_Data(ofstream& ofs, int Ti);
 
 
 };

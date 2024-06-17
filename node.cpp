@@ -577,6 +577,19 @@ void Myosin_Node::set_Myosin_Equi_Len(double equi_len){
 //==============================
 //Functions:
 //==============================
+void Myosin_Node::sound_Off_Nyosin_Node_Info(){
+    cout << "Parent mini-filament #: " << get_My_Myosin()->get_Myosin_Num() << endl;
+    cout << "Node #: " << get_My_Node_Rank() << endl;
+    cout << "Location: " << get_Node_Location() << endl;
+    cout << "Neighboring pair: " << get_Neighboring_Pair()->get_Node_Location() << endl;
+    cout << "Drag coeff: " << get_Drag_Coeff() << endl;
+    cout << "Linear spring coeff: " << get_K_Linear_Myosin() << endl;
+    cout << "Linear equilibrium length: " << get_Myosin_Equi_Len() << endl;
+    cout << "Total force: " << get_Total_Force() << endl;
+
+    return;
+}
+
 void Myosin_Node::sound_Off_Neighboring_Pair(){
     cout << "Myosin node #: " << get_My_Node_Rank() << endl;
     cout << "Location: " << get_Node_Location() << endl;

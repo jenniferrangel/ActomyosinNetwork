@@ -324,8 +324,12 @@ void Network::update_Num_Myosins(shared_ptr<Myosin>& new_Myosin){
 // Functions
 //=======================================================
 void Network::sound_Off_All_Node_Info(){
-    cout << "The network is composed of " << get_Num_Filaments() << " actin filaments!!" << endl;
-    cout << "****************************************************" << endl;
+    cout << "********************************************************************************************************************************" << endl;
+    cout << "The network is composed of " << get_Num_Filaments() << " actin filaments AND " << get_Num_Myosins() << " myosin mini-filaments!!" << endl;
+    cout << "********************************************************************************************************************************" << endl;
+
+    cout << "Actin filament info: " << endl;
+    cout << "====================" << endl;
 
     shared_ptr<Filament> curr;
     vector<shared_ptr<Actin_Node>> actins;
@@ -346,13 +350,34 @@ void Network::sound_Off_All_Node_Info(){
         cout << "***********************" << endl;
         cout << endl;
     }
-    cout << "****************************************************" << endl;
+
+    cout << "Myosin mini-filament info: " << endl;
+    cout << "==========================" << endl;
+
+    shared_ptr<Myosin> current;
+    vector<shared_ptr<Myosin_Node>> minifilaments;
+    for(unsigned int i = 0; i < myosins.size(); i++){
+        current = myosins.at(i);
+        cout << "Myosin mini-filament #: " << current->get_Myosin_Num() << endl;
+        cout << "Total number of nodes in mini-filament: " << current->get_Num_Myosin_Nodes() << endl;
+
+        current->get_Myosin_Nodes_Vec(minifilaments);
+
+        for(unsigned int j = 0; j < minifilaments.size(); j++){
+            minifilaments.at(j)->sound_Off_Nyosin_Node_Info();
+        }
+        cout << endl;
+        cout << "***********************" << endl;
+        cout << endl;
+    }
+
+    cout << "********************************************************************************************************************************" << endl;
     
     return;
 }
 
 void Network::sound_Off_Neighbors(){
-    cout << "NEIGHBORS: " << endl;
+    cout << "ACTIN NEIGHBORS: " << endl;
     cout << "***********************************************" << endl;
 
     shared_ptr<Filament> curr;
@@ -366,6 +391,27 @@ void Network::sound_Off_Neighbors(){
 
         for(unsigned int j = 0; j < actins.size(); j++){
             actins.at(j)->sound_Off_Neighbors();
+        }
+    }
+
+    cout << "***********************************************" << endl;
+
+    cout << endl;
+
+    cout << "MYOSIN NEIGHBORING PAIRS: " << endl;
+    cout << "***********************************************" << endl;
+
+    shared_ptr<Myosin> current;
+    vector<shared_ptr<Myosin_Node>> minifilaments;
+
+    for(unsigned int i = 0; i < myosins.size(); i++){
+        current = myosins.at(i);
+        cout << "Myosin mini-filament #: " << current->get_Myosin_Num() << endl;
+        
+        current->get_Myosin_Nodes_Vec(minifilaments);
+
+        for(unsigned int j = 0; j < minifilaments.size(); j++){
+            minifilaments.at(j)->sound_Off_Neighboring_Pair();
         }
     }
 
@@ -494,7 +540,7 @@ void Network::locations_Output(ofstream& ofs, int Ti){
     return;
 }
 
-//This function prints the node data info
+//This function prints the actin node data info
 void Network::node_Data_Output(ofstream& ofs, int Ti){
     ofs <<"Filament#" << ' ' << "Node#" << ' ' << "Location (x, y, z)" << ' ' <<  "Left Nbr (x, y, z)" << ' ' <<  "Right Nbr (x, y, z)" << ' ' << "Drag Coeff" << ' ' << "k_linear" << ' ' << "Equi Len" << ' ' << "k_bend" << ' ' << "theta" << ' ' << "theta_equi" << endl;
     for(unsigned int i = 0; i < filaments.size(); i++){
@@ -514,8 +560,36 @@ void Network::filament_Data_Output(ofstream& ofs, int Ti){
 
 //This function prints the network data node info
 void Network::network_Data_Output(ofstream& ofs, int Ti){
-    ofs << "NumberFilaments" << ' ' << "Ti" << endl;
-    ofs << this->get_Num_Filaments() << ' ' << Ti << endl;
+    ofs << "NumberActinFils" << ' ' << "NumberMyosins" << ' ' << "Ti" << endl;
+    ofs << this->get_Num_Filaments() << ' ' << this->get_Num_Myosins() << ' ' << Ti << endl;
+    return;
+}
+
+//This function prints the myosin node data info
+void Network::locations_Myosin_Output(ofstream& ofs, int Ti){
+    ofs <<"Myosin#" << ' ' << "Node#" << ' ' << "Location (x, y, z)" << endl;
+    for(unsigned int i = 0; i < myosins.size(); i++){
+        myosins.at(i)->print_Myosin_Locations(ofs, Ti);
+    }
+    
+    return;
+}
+
+//This function prints the myosin node data info
+void Network::myosin_Node_Data_Output(ofstream& ofs, int Ti){
+    ofs <<"Myosin#" << ' ' << "Node#" << ' ' << "Location (x, y, z)" << ' ' <<  "Nbr Pair (x, y, z)" << ' ' << "Drag Coeff" << ' ' << "k_linear" << ' ' << "Equi Len" << endl;
+    for(unsigned int i = 0; i < myosins.size(); i++){
+        myosins.at(i)->print_Myosin_Node_Data(ofs, Ti);
+    }
+    return;
+}
+
+//This function prints the myosin mini-filament data info
+void Network::Myosin_Minifilament_Data_Output(ofstream& ofs, int Ti){
+    ofs << "Myosin#" << ' ' << "#Nodes" << endl;
+    for(unsigned int i = 0; i < myosins.size(); i++){
+        myosins.at(i)->print_MiniFilament_Data(ofs, Ti);
+    }
     return;
 }
 

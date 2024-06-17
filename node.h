@@ -187,6 +187,7 @@ class Myosin_Node: public Node, public enable_shared_from_this<Myosin_Node>{
 
     //Functions
     //=======================
+    void sound_Off_Nyosin_Node_Info();
     void sound_Off_Neighboring_Pair();
 
 };

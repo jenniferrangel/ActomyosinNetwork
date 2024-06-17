@@ -20,7 +20,7 @@ Running:
     *WE NEED TO KEED THIS ORDER:
         -this is used in main.cpp
 
-    *For now we run it as ./program Animation DataOutput/Locations DataOutput/Node_Data DataOutput/Filament_Data DataOutput/Network_Data
+    *For now we run it as ./program Animation DataOutput/Locations DataOutput/Node_Data DataOutput/Filament_Data DataOutput/Myosin_Data DataOutput/Network_Data
 
 *************************************************************************************************
 
