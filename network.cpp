@@ -444,13 +444,14 @@ void Network::update_Positions(int Ti){
 }
 
 //***Functions for VTK output****//
+//Actin Filaments
 void Network::print_VTK_File(ofstream& ofs){
 
     //Update the index of the nodes
     update_VTK_Indices();
 
     ofs << "# vtk DataFile Version 3.0" << endl;
-	ofs << "Point representing Actomyosin Network model" << endl;
+	ofs << "Point representing Actin Filaments in the Actomyosin Network model" << endl;
 	ofs << "ASCII" << endl << endl;
 	ofs << "DATASET UNSTRUCTURED_GRID" << endl;
 
@@ -514,7 +515,7 @@ void Network::print_VTK_File(ofstream& ofs){
 }
 
 void Network::update_VTK_Indices(){
-    cout << "Updating VTK indices..." << endl;
+    cout << "Updating Actin VTK indices..." << endl;
 
     int id = 0;
     //iterate through the filaments to reassign vtk id's (starting at 0)
@@ -527,6 +528,78 @@ void Network::update_VTK_Indices(){
 
     return;
 
+}
+
+//Myosin Mini-filaments
+void Network::print_Myosin_VTK_File(ofstream& ofs){
+    //Update the index of the nodes
+    update_Myosin_VTK_Indices();
+
+    ofs << "# vtk DataFile Version 3.0" << endl;
+	ofs << "Point representing Myosin MiniFilaments in the Actomyosin Network model" << endl;
+	ofs << "ASCII" << endl << endl;
+	ofs << "DATASET UNSTRUCTURED_GRID" << endl;
+
+    //Set the structure:
+    //Need the total number of points/nodes for all myosin mini-filaments and number of edges/connections per mini-filament
+    int num_Points_Myo = 0;
+    int num_Edges_Myo = 0;
+
+    for(unsigned int i = 0; i < myosins.size(); i++){
+        num_Points_Myo += myosins.at(i)->get_Num_Myosin_Nodes();
+        num_Edges_Myo += myosins.at(i)->get_Num_Myosin_Nodes() - 1; //always 1 less than total # nodes per mini-filament
+        cout << "number of myosin edges = " << num_Edges_Myo << endl;
+    }
+
+    //The myosin node/point positions
+    ofs << "POINTS " << num_Points_Myo << " float64" << endl;
+
+    // vector<int> start_points;
+	// vector<int> end_points;
+    //for double-checking purposes so we know it is getting a total # nodes
+	int count_myo = 0;
+
+    for(unsigned int i = 0; i < myosins.size(); i++){
+        //start_points.push_back(count_myo);
+        myosins.at(i)->print_Myosin_VTK_Points(ofs,count_myo);
+        //end_points.push_back(count_myo - 1);
+    }
+    cout << "count = " << count_myo << endl;
+
+    ofs << endl;
+
+    //to visualize how the nodes are connected i.e. the springs connecting nodes:
+    ofs << "CELLS " << num_Edges_Myo << " " << 3*num_Edges_Myo << endl;
+    for(unsigned int i = 0; i < myosins.size(); i++){
+        myosins.at(i)->print_Myosin_VTK_connections(ofs);
+    }
+
+    ofs << endl;
+
+    ofs << "CELL_TYPES " << num_Edges_Myo << endl;
+    for(int i = 0; i < num_Edges_Myo; i++){
+        //type for adhesion relationship: in this case a vtk_line ._____.
+        ofs << 3 << endl;
+    }
+
+    ofs << endl;
+
+
+    return;
+}
+
+void Network::update_Myosin_VTK_Indices(){
+    cout << "Updating Myosin VTK indices..." << endl;
+
+    int id = 0;
+    //iterate through the myosin mini-filaments to reassign vtk id's (starting at 0)
+    for (unsigned int i = 0; i < myosins.size(); i++){
+        myosins.at(i)-> update_Myosin_Node_VTK_Indices(id);
+        //cout << "ID = " << id << endl;
+    }
+    //cout << "final index = " << id << endl;
+
+    return;
 }
 
 //***Functions for printing data output***//

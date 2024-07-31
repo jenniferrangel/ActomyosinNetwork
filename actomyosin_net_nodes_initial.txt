@@ -44,6 +44,6 @@ MyoNode:1.0,0.25
 End_Myosin:
 
 MyosinNumber:1
-MyoNode:0.7, 0.4
-MyoNode:0.7,0.55
+MyoNode:0.7, 0.55
+MyoNode:0.7,0.7
 End_Myosin:

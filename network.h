@@ -69,8 +69,12 @@ class Network{
 
         //Printing and dataoutput functions
         //***Functions for VTK output
+        //Actin filaments
         void print_VTK_File(ofstream& ofs);
         void update_VTK_Indices();
+        //Myosin mini-filaments
+        void print_Myosin_VTK_File(ofstream& ofs);
+        void update_Myosin_VTK_Indices();
 
         //***Printing data output
         void locations_Output(ofstream& ofs, int Ti);

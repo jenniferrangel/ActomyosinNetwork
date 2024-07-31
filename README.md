@@ -56,7 +56,7 @@ To compile and run the code use the following commands:
             -Node_Data
             -Filament_Data
             -Myosin_Data
-            -Tissue_Data
+            -Network_Data
 
         *Then run using ./program Animation DataOutput/Locations DataOutput/Node_Data DataOutput/Filament_Data DataOutput/Myosin_Data DataOutput/Network_Data
 

@@ -138,6 +138,56 @@ void Myosin::get_Myosin_Nodes_Vec(vector<shared_ptr<Myosin_Node>>& myosins){
 //***Update node positions via Langevin Equation***//
 
 //***Functions for VTK output****//
+void Myosin::update_Myosin_Node_VTK_Indices(int& id){
+    for(unsigned int i = 0; i < myosin_nodes.size(); i++){
+        myosin_nodes.at(i)->update_VTK_Index(id);
+        cout << "id = " << id << endl;
+        id++;
+    }
+    return;
+}
+
+void Myosin::print_Myosin_VTK_Points(ofstream& ofs, int& count_myo){
+    for(unsigned int i = 0; i < myosin_nodes.size(); i++){
+        Coord location = myosin_nodes.at(i)->get_Node_Location();
+        ofs << location.get_X() << ' ' << location.get_Y() << ' ' << 0 << endl;
+        count_myo++;
+    }
+
+    return;
+}
+
+void Myosin::print_Myosin_VTK_connections(ofstream& ofs){
+    int my_ID;
+    int pair_ID;
+
+    vector<shared_ptr<Myosin_Node>> myosins; //will store myosin nodes here
+    this->get_Myosin_Nodes_Vec(myosins);
+    shared_ptr<Myosin_Node> curr_node = NULL;
+    shared_ptr<Myosin_Node> nhbr_pair = NULL;
+    //shared_ptr<Myosin_Node> previous_node = NULL;
+
+    for(unsigned int i = 0; i < myosin_nodes.size(); i++){
+        curr_node = myosins.at(i);
+        nhbr_pair = myosins.at(i)->get_Neighboring_Pair();
+        //previous_node = curr_node;
+
+        if((i%2)==0){
+            cout << "curr_node = " << curr_node->get_Node_Location() << endl;
+            cout << "nhbr_pair = "  << nhbr_pair->get_Node_Location() << endl;
+
+            my_ID = curr_node->get_VTK_Index();
+            pair_ID = nhbr_pair->get_VTK_Index();
+            ofs.flush();
+            ofs << 2 << " " << my_ID << " " << pair_ID << endl;
+
+            cout << "my_myosin_ID = " << my_ID << endl;
+            cout << "pair_ID = " << pair_ID << endl;
+        }
+    }
+
+    return;
+}
 
 //***Functions for data output***//
 //This function prints out the myosin node locations

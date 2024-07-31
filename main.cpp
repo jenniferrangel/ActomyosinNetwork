@@ -118,6 +118,11 @@ int main(int argc, char* argv[]){
 	ofstream ofs_anim;
 	int out = 0;
 
+    //Myosin vtk files
+    string Filename_Myo;
+    string initial_myo = "/Myosin_MiniFilament";
+    ofstream ofs_anim_myo;
+
     //variables for dataoutput
     //========================
     //For actin filaments:
@@ -207,12 +212,20 @@ int main(int argc, char* argv[]){
 					Number = "0" + to_string(out);
 				}
 
+                //Actin Filament only
                 Filename = animation_folder + initial + Number + format;
 
-                cout << "Opening the file in the animation folder" << endl;
+                cout << "Opening the actin vtk file in the animation folder" << endl;
                 ofs_anim.open(Filename.c_str());
                 actomyosin_Network.print_VTK_File(ofs_anim);
                 ofs_anim.close();
+
+                //Myosin Filament only
+                Filename_Myo = animation_folder + initial_myo + Number + format;
+                cout << "Opening the myosin vtk file in the animation folder" << endl;
+                ofs_anim_myo.open(Filename_Myo.c_str());
+                actomyosin_Network.print_Myosin_VTK_File(ofs_anim_myo);
+                ofs_anim_myo.close();
 
                 out++;
             }

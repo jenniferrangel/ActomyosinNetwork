@@ -79,8 +79,9 @@ class Myosin: public enable_shared_from_this<Myosin> {
 
 
     //***Functions for VTK output
-
-
+    void update_Myosin_Node_VTK_Indices(int& id);
+    void print_Myosin_VTK_Points(ofstream& ofs, int& count_myo);  
+    void print_Myosin_VTK_connections(ofstream& ofs);    
 
     //***Functions for data output
     //This function prints out the myosin node locations
