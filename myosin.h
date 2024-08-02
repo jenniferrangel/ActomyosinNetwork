@@ -73,10 +73,10 @@ class Myosin: public enable_shared_from_this<Myosin> {
     //=======================
 
     //***Calculate forces
-
+    void calculate_New_Myosin_Forces(int Ti);
 
     //***Update node positions via Langevin eqn
-
+    void update_Myosin_Node_Positions(int Ti);
 
     //***Functions for VTK output
     void update_Myosin_Node_VTK_Indices(int& id);

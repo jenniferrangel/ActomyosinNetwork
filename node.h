@@ -190,6 +190,17 @@ class Myosin_Node: public Node, public enable_shared_from_this<Myosin_Node>{
     void sound_Off_Nyosin_Node_Info();
     void sound_Off_Neighboring_Pair();
 
+    //***Functions for calculating forces
+    void calculate_Myosin_Forces(int Ti);
+
+    //Linear spring forces
+    Coord calc_Myosin_Linear_Force();
+    Coord linear_Myosin_Spring_Equation(shared_ptr<Myosin_Node> node);
+
+    //Random force
+    Coord calc_Myosin_Stochastic_Force();
+    double get_Random_Num(double mean, double stddev);
+
 };
 
 

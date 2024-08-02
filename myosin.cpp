@@ -134,8 +134,39 @@ void Myosin::get_Myosin_Nodes_Vec(vector<shared_ptr<Myosin_Node>>& myosins){
 //==============================
 
 //***Calculate forces***//
+void Myosin::calculate_New_Myosin_Forces(int Ti){
+    vector<shared_ptr<Myosin_Node>> myosins; //will store myosin nodes here
+    this->get_Myosin_Nodes_Vec(myosins);
+
+    cout << "Calculating myosin forces..." << endl;
+
+    //#pragma omp parallel
+       // {
+    //#pragma omp for schedule(static,1)
+            for(unsigned int i = 0; i < myosins.size(); i++){
+                myosins.at(i)->calculate_Myosin_Forces(Ti);
+            }
+        //}
+
+    return;
+}
 
 //***Update node positions via Langevin Equation***//
+void Myosin::update_Myosin_Node_Positions(int Ti){
+    vector<shared_ptr<Myosin_Node>> myominifils; //will store myosin nodes here
+    this->get_Myosin_Nodes_Vec(myominifils);
+
+    //#pragma omp parallel 
+	    //{	
+    //#pragma omp for schedule(static,1)
+            for(unsigned int i = 0; i < myominifils.size(); i++){
+                cout << "Updating myosin locations..." << endl;
+                myominifils.at(i)->update_Position(Ti);
+            }
+        //}
+    
+    return;
+}
 
 //***Functions for VTK output****//
 void Myosin::update_Myosin_Node_VTK_Indices(int& id){
@@ -165,13 +196,12 @@ void Myosin::print_Myosin_VTK_connections(ofstream& ofs){
     this->get_Myosin_Nodes_Vec(myosins);
     shared_ptr<Myosin_Node> curr_node = NULL;
     shared_ptr<Myosin_Node> nhbr_pair = NULL;
-    //shared_ptr<Myosin_Node> previous_node = NULL;
-
+    
     for(unsigned int i = 0; i < myosin_nodes.size(); i++){
         curr_node = myosins.at(i);
         nhbr_pair = myosins.at(i)->get_Neighboring_Pair();
-        //previous_node = curr_node;
-
+        
+        //to avoid printing doubles of the same connection between a pair (Ex: 0 1, 1,0 when it should just be 0 1)
         if((i%2)==0){
             cout << "curr_node = " << curr_node->get_Node_Location() << endl;
             cout << "nhbr_pair = "  << nhbr_pair->get_Node_Location() << endl;

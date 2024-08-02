@@ -424,9 +424,22 @@ void Network::sound_Off_Neighbors(){
 void Network::calculate_New_Forces(int Ti){
    //#pragma omp parallel for schedule(static,1)
    for(unsigned int i = 0; i < filaments.size(); i++){
-        cout << "Calc forces for filament: " << i << endl;
+        cout << "***********************************************" << endl;
+        cout << "ACTIN FILAMENT FORCES BEING CALCULATED..." << endl;
+        cout << "***********************************************" << endl;
+        cout << "Calc forces for actin filament: " << i << endl;
         filaments.at(i)->calculate_New_Forces(Ti);
-        cout << "Successfully calculated forces!!" << endl;
+        cout << "Successfully calculated actin forces!!" << endl;
+    }
+
+    //#pragma omp parallel for schedule(static,1)
+   for(unsigned int j = 0; j < myosins.size(); j++){
+        cout << "***********************************************" << endl;
+        cout << "MYOSIN MINI-FILAMENT FORCES BEING CALCULATED..." << endl;
+        cout << "***********************************************" << endl;
+        cout << "Calc forces for myosin mini-filament: " << j << endl;
+        myosins.at(j)->calculate_New_Myosin_Forces(Ti);
+        cout << "Successfully calculated myosin forces!!" << endl;
     }
    
    return;
@@ -437,7 +450,16 @@ void Network::calculate_New_Forces(int Ti){
 void Network::update_Positions(int Ti){
     //#pragma omp parallel for schedule(static,1)
     for(unsigned int i = 0; i < filaments.size(); i++){
+        cout << "UPDATING ACTIN NODE POSITIONS..." << endl;
+        cout << "***********************************************" << endl;
         filaments.at(i)->update_Node_Positions(Ti);
+    }
+
+    //#pragma omp parallel for schedule(static,1)
+    for(unsigned int j = 0; j < myosins.size(); j++){
+        cout << "UPDATING MYOSIN NODE POSITIONS..." << endl;
+        cout << "***********************************************" << endl;
+        myosins.at(j)->update_Myosin_Node_Positions(Ti);
     }
 
     return;

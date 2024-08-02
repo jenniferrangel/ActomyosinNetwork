@@ -225,7 +225,7 @@ void Actin_Node::sound_Off_Neighbors(){
 //=================================
 //***calculates total force on the actin node
 void Actin_Node::calculate_Forces(int Ti){
-    cout << "Calculating total force..." << endl;
+    cout << "Calculating total actin force..." << endl;
 
     //------Linear force from left and right neighbors------
     //since 1st node doesn't have L nhbr => F^L = 0. Since last node doesn't have R nhbr => F^R = 0.
@@ -596,6 +596,107 @@ void Myosin_Node::sound_Off_Neighboring_Pair(){
     cout << "My neighboring pair: " << get_Neighboring_Pair()->get_Node_Location() << endl;
 
     return;
+}
+
+//***Calculate force functions***//
+//=================================
+//***calculates total force on the myosin node
+void Myosin_Node::calculate_Myosin_Forces(int Ti){
+    cout << "Calculating total myosin force..." << endl;
+
+    //------Linear force from neighboring pair------
+    cout << "Myosin Linear Spring Force being calculated..." << endl;
+    Coord F_linear_myo = calc_Myosin_Linear_Force();
+    cout << "F_linear_myo = " << F_linear_myo << endl;
+
+    //------Stochastic/random force------
+    cout <<"Myosin Stochastic/random force being calculated..." << endl;
+    Coord F_stoch_myo = calc_Myosin_Stochastic_Force();
+    cout << "F_stoch_myo = " << F_stoch_myo << endl;
+
+    //total force myosin on node
+    new_total_force = F_linear_myo + F_stoch_myo;
+
+    cout << "Total myosin force = " << F_linear_myo << " + " << F_stoch_myo << endl;
+
+    return;
+}
+
+//***Linear spring force
+Coord Myosin_Node::calc_Myosin_Linear_Force(){
+    Coord F_linear;
+
+    cout << "Calc myosin linear from neighboring pair" << endl;
+    Coord F_lin_myo = linear_Myosin_Spring_Equation(neighboring_pair);
+    cout << "F_lin_myo = " << F_lin_myo << endl;
+
+    F_linear = F_lin_myo;
+    cout << "F_linear_myo = " << F_linear << endl;
+
+    return F_linear;
+}
+
+Coord Myosin_Node::linear_Myosin_Spring_Equation(shared_ptr<Myosin_Node> node){
+    if(node == NULL){
+        cout << "ERROR: Accessing a NULL pointer. Will abort!!!" << endl;
+        exit(1);
+    }
+
+    Coord F_linear_myo;
+
+    //Compute the vector and length
+    Coord diff_vec = node->get_Node_Location() - my_location;
+    double diff_length = diff_vec.length();
+    cout << "diff_vec_myo = " << diff_vec << endl;
+    cout << "diff_length_myo = " << diff_length << endl;
+
+    //To avoid dividing by 0
+    if(diff_length == 0){
+        cout << "Avoiding 0 in the denominator. Returning (0,0)" << endl;
+        return Coord(0,0);
+    }
+
+    //F_spring = k(|node_i - node_j| - l_equi)((node_i - node_j)/|node_i - node_j|)
+    F_linear_myo = (diff_vec/diff_length)*k_linear_myosin*(diff_length - this->myosin_spring_equi_len);
+    cout << "Myosin Linear Force: " << F_linear_myo << endl;
+
+    return F_linear_myo;
+
+}
+
+//***Stochastic force
+Coord Myosin_Node::calc_Myosin_Stochastic_Force(){
+    Coord F_random_myo;
+
+    //Mean and standard deviation of normal distribution
+    double mean = 0.0;
+    double stddev = 1.0;
+
+    //Generate coord with normally distributed random numbers
+    double myo_rand_num1 = get_Random_Num(mean, stddev);
+    cout << "myo_rand_num1 = " << myo_rand_num1 << endl;
+    double myo_rand_num2 = get_Random_Num(mean, stddev);
+    cout << "myo_rand_num2 = " << myo_rand_num2 << endl;
+
+    Coord rand_force = Coord(myo_rand_num1, myo_rand_num2);
+    cout << "myo random coord" << rand_force << endl;
+
+    //Now calculate the random force equation
+    double drag = get_Drag_Coeff();
+    double constant = sqrt((2*kB*TEMPERATURE*drag)/(dt));
+
+    F_random_myo = rand_force*constant;
+
+    cout << "F_random_myo = " << rand_force << " * " << constant << " = " << F_random_myo << endl;
+
+    return F_random_myo;
+}
+
+double Myosin_Node::get_Random_Num(double mean, double stddev){
+    double random_number;
+    random_number = this->get_My_Myosin()->get_Network()->get_Normally_Distributed_Random_Number(mean, stddev);
+    
+    return random_number;
 }
 
 //==============================

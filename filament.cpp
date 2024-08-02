@@ -351,7 +351,7 @@ void Filament::calculate_New_Forces(int Ti){
     vector<shared_ptr<Actin_Node>> actins; //will store actin nodes here
     this->get_Actin_Nodes_Vec(actins);
 
-    cout << "Calculating forces..." << endl;
+    cout << "Calculating actin forces..." << endl;
 
     //#pragma omp parallel
        // {
