@@ -34,7 +34,10 @@ Initial conditions (IC):
         - uncomment/comment respective lines under the section "//instantiate the network:"
 
     Can test different network configurations: Open folder "Make_Actomyosin_Network_Scripts"
-        - This folder contains 3 different subfolders
+        - This folder contains 2 different subfolders
+            * Make_Actomyosin_Network: contains actin filaments and pMyoII mini-filaments
+            * Make_Actin_Network: ONLY actin filaments
+         - The Make_Actin_Network folder contains 3 different subfolders
             * Network_Straight_Filaments
             * Network_Random_Alignment
             * Network_Vertical_Horizontal_Random_Alignment
@@ -61,4 +64,14 @@ To compile and run the code use the following commands:
         *Then run using ./program Animation DataOutput/Locations DataOutput/Node_Data DataOutput/Filament_Data DataOutput/Myosin_Data DataOutput/Network_Data
 
 
+***********************************************************************
+
+***********************************************************************
+
+PostProcessing: measuring the network size to determine the contractility of the network
+
+    - The folder Measuring_Network_Size_Scripts contains the scripts to measure the size of the network
+        *network_size_IC.m: measures the initial network size
+        *network_size_FINAL.m: measure the final network size and compares the initial and final network size
+            
 ***********************************************************************

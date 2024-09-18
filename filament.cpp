@@ -218,6 +218,18 @@ void Filament::make_nodes(vector<Coord> nodes){
         actins.at(i)->set_Equi_Angle(THETA_EQUI_ANGLE);
 
         actins.at(i)->set_My_Node_Rank(rank);
+
+        //Initial nodes do not have connections formed
+        actins.at(i)->set_Connected_Myosin_Node(nullptr);
+        actins.at(i)->set_Conn_Myosin_MiniFilament(nullptr);
+
+        //for the actomyosin connection
+        actins.at(i)->set_K_Linear_Actomyo_Conn(K_LINEAR_STIFF_ACTIN_MYO_CONN);
+        actins.at(i)->set_Actomyo_Equi_Len(ACTIN_MYO_CONN_SPRING_EQUI_LEN);
+
+        //for myo pulling force upon connection
+        actins.at(i)->set_Myo_Pull_Force(F_MYO_PULLING);
+
     }
 
     //update the actin filament angles

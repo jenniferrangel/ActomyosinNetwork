@@ -69,10 +69,14 @@ class Node{
 //==============================
 class Actin_Node: public Node, public enable_shared_from_this<Actin_Node>{
     protected:
-    //variables shared by actin nodes
+        //variables shared by actin nodes
         shared_ptr<Filament> my_filament;
         shared_ptr<Actin_Node> left_neighbor;
         shared_ptr<Actin_Node> right_neighbor;
+
+        //for the actomyosin connection
+        shared_ptr<Myosin_Node> curr_conn_myo_node;
+        shared_ptr<Myosin> curr_conn_minifilament;
 
         //needed for the linear spring force calculation:
         double k_linear_actin;
@@ -83,6 +87,13 @@ class Actin_Node: public Node, public enable_shared_from_this<Actin_Node>{
         double my_current_angle;
         double equi_angle;
         double cross_product;  //this is used to determine if angle > 180
+
+        //needed for the actomyosin conn linear spring force calculation:
+        double k_linear_actomyoConn;
+        double actomyo_spring_equi_len;
+
+        //myo pulling force
+        double myo_pull_force;
 
     public:
     //Constructors:
@@ -106,6 +117,13 @@ class Actin_Node: public Node, public enable_shared_from_this<Actin_Node>{
     shared_ptr<Actin_Node> get_Right_Neighbor(){return right_neighbor;}
     void set_Right_Neighbor(shared_ptr<Actin_Node> right_nbh);
 
+    //for the actomyosin connection
+    shared_ptr<Myosin_Node> get_Conn_Myosin_Node(){return curr_conn_myo_node;}
+    void set_Connected_Myosin_Node(shared_ptr<Myosin_Node> myo_node);
+
+    shared_ptr<Myosin> get_Conn_Myosin_MiniFilament(){return curr_conn_minifilament;}
+    void set_Conn_Myosin_MiniFilament(shared_ptr<Myosin> minifilament);
+
     //set & get the linear spring constant and equilibrium length:
     double get_K_Linear_Actin(){return k_linear_actin;}
     void set_K_Linear_Actin(double k_linear);
@@ -122,6 +140,18 @@ class Actin_Node: public Node, public enable_shared_from_this<Actin_Node>{
 
     double get_Equi_Angle(){return equi_angle;}
     void set_Equi_Angle(double new_angle);
+
+    //set & get spring constant and equilibrium length for actomyosin connection:
+    double get_K_Linear_Actomyo_Conn(){return k_linear_actomyoConn;}
+    void set_K_Linear_Actomyo_Conn(double k_lin);
+    
+    double get_Actomyo_Equi_Len(){return actomyo_spring_equi_len;}
+    void set_Actomyo_Equi_Len(double equil_len);
+
+    //set & get myosin pulling force
+    double get_Myo_Pull_Force(){return myo_pull_force;}
+    void set_Myo_Pull_Force(double pull_force);
+    
 
     //Functions
     //=======================
@@ -145,6 +175,14 @@ class Actin_Node: public Node, public enable_shared_from_this<Actin_Node>{
     Coord calc_Stochastic_Force();
     double get_Random_Number(double mean, double stddev);
 
+    //Actomyosin connection force
+    Coord calc_Actomyo_Conn_Force();
+    Coord linear_Actomyo_Spring_Equation(shared_ptr<Myosin_Node> myo_node);
+
+    //Myosin pulling force from conn
+    Coord calc_Myosin_Pull_Force();
+    Coord myosin_Pulling_Force(shared_ptr<Myosin_Node> myo_node);
+
 
 };
 
@@ -156,9 +194,23 @@ class Myosin_Node: public Node, public enable_shared_from_this<Myosin_Node>{
     shared_ptr<Myosin> my_myosin_minifilament;
     shared_ptr<Myosin_Node> neighboring_pair;   //every mini-filament is composed of 2 nodes, so each node has it's pair i.e. its neighbor
 
+    //For actomyosin connection
+    bool connected;   //false/0: not connected true/1:connected
+    shared_ptr<Filament> curr_conn_filament;     // current actin filament it is connected to
+    shared_ptr<Actin_Node> curr_conn_actin_node; // current actin node it binds to to form connection
+    shared_ptr<Filament> prev_conn_filament;
+    shared_ptr<Actin_Node> prev_conn_actin_node;
+
     //needed for the linear spring force calculation:
     double k_linear_myosin;
     double myosin_spring_equi_len;
+
+    //needed for the actomyosin conn linear spring force calculation:
+    double k_linear_actomyo_conn;
+    double actomyo_spring_equi_length;
+
+    //myo pulling force
+    double myo_pulling_force;
 
     public:
     //Constructors:
@@ -179,11 +231,38 @@ class Myosin_Node: public Node, public enable_shared_from_this<Myosin_Node>{
     shared_ptr<Myosin_Node> get_Neighboring_Pair(){return neighboring_pair;}
     void set_Neighboring_Pair(shared_ptr<Myosin_Node> nbh_pair);
 
+    //set & get if myosin is connected
+    bool get_If_Connected(){return connected;}
+    void set_If_Connected(bool conn);
+
+    shared_ptr<Filament> get_Connected_Filament(){return curr_conn_filament;}
+    void set_Connected_Filament(shared_ptr<Filament> filament);
+
+    shared_ptr<Actin_Node> get_Connected_Actin_Node(){return curr_conn_actin_node;}
+    void set_Connected_Actin_Node(shared_ptr<Actin_Node> node);
+
+    shared_ptr<Filament> get_Prev_Connected_Filament(){return prev_conn_filament;}
+    void set_Prev_Connected_Filament(shared_ptr<Filament> prev_filament);
+
+    shared_ptr<Actin_Node> get_Prev_Connected_Actin_Node(){return prev_conn_actin_node;}
+    void set_Prev_Connected_Actin_Node(shared_ptr<Actin_Node> prev_node);
+
     //set & get the linear spring constant and equilibrium length:
     double get_K_Linear_Myosin(){return k_linear_myosin;}
     void set_K_Linear_Myosin(double k_linear);
     double get_Myosin_Equi_Len(){return myosin_spring_equi_len;}
     void set_Myosin_Equi_Len(double equi_len);
+
+    //set & get the spring constant and equilibrium length for the actomyosin connection:
+    double get_K_Linear_Actomyo_Conn(){return k_linear_actomyo_conn;}
+    void set_K_Linear_Actomyo_Conn(double k_actomyo);
+
+    double get_Actomyo_Spring_Equi_Length(){return actomyo_spring_equi_length;}
+    void set_Actomyo_Spring_Equi_Length(double equi_len);
+
+    //set & get myo pulling force
+    double get_Myo_Pulling_Force(){return myo_pulling_force;}
+    void set_Myo_Pulling_Force(double pulling_force);
 
     //Functions
     //=======================
@@ -200,6 +279,15 @@ class Myosin_Node: public Node, public enable_shared_from_this<Myosin_Node>{
     //Random force
     Coord calc_Myosin_Stochastic_Force();
     double get_Random_Num(double mean, double stddev);
+
+    //Form actomyosin connections:
+    void connect_To_Filament(double radius);
+    Coord calc_Actomyo_Connection_Force();
+    Coord linear_Spring_Actomyo_Equation(shared_ptr<Actin_Node> actin_node);
+
+    //Myosin pulling force from connection
+    Coord calc_Myosin_Pulling_Force();
+    Coord myosin_Pulling_Force(shared_ptr<Filament> conn_filament, shared_ptr<Actin_Node> actin_node);
 
 };
 

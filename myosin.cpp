@@ -92,6 +92,7 @@ void Myosin::make_myosin_nodes(vector<Coord> nodes){
     // double spring_equi_len = 0.0;
     // double k_linear = 0.0;
     int rank = 0;
+    bool conn = false; //all nodes are initialy not connected
 
     for(unsigned int i = 0; i < myosins.size(); i++){
         rank = i;
@@ -99,6 +100,21 @@ void Myosin::make_myosin_nodes(vector<Coord> nodes){
         myosins.at(i)->set_K_Linear_Myosin(K_LINEAR_STIFF_MYOSIN);
         myosins.at(i)->set_Myosin_Equi_Len(MYOSIN_SPRING_EQUI_LEN);
         myosins.at(i)->set_My_Node_Rank(rank);
+
+        //Actomyosin connections are not present when nodes are initialized
+        myosins.at(i)->set_If_Connected(conn);
+        myosins.at(i)->set_Connected_Filament(nullptr);
+        myosins.at(i)->set_Connected_Actin_Node(nullptr);
+        myosins.at(i)->set_Prev_Connected_Filament(nullptr);
+        myosins.at(i)->set_Prev_Connected_Actin_Node(nullptr);
+
+        //setting up parameters for connections
+        myosins.at(i)->set_K_Linear_Actomyo_Conn(K_LINEAR_STIFF_ACTIN_MYO_CONN);
+        myosins.at(i)->set_Actomyo_Spring_Equi_Length(ACTIN_MYO_CONN_SPRING_EQUI_LEN);
+
+        //myosin pulling force
+        myosins.at(i)->set_Myo_Pulling_Force(F_MYO_PULLING);
+
     }
 
     cout << "Finished making the myosin nodes!" << endl;
@@ -127,6 +143,13 @@ void Myosin::set_Num_Myosin_Nodes(int number_myosin_nodes){
 
 void Myosin::get_Myosin_Nodes_Vec(vector<shared_ptr<Myosin_Node>>& myosins){
     myosins = this->myosin_nodes;
+    return;
+}
+
+//empty out possible connections
+void Myosin::clear_Possible_Connections(){
+    cout << "CLEARING possible connections vector" << endl;
+    possible_filament_connections.clear();
     return;
 }
 //==============================
@@ -165,6 +188,96 @@ void Myosin::update_Myosin_Node_Positions(int Ti){
             }
         //}
     
+    return;
+}
+
+//***Find neighboring actin filaments for possible connections***//
+void Myosin::find_Possible_FilConn(const vector<shared_ptr<Filament>>& actinfils, double connection_radius){
+    cout << "range radius = " << connection_radius << endl;
+    //bool foundConnection = false;
+    int vectorSize = actinfils.size();
+    cout << "vector size = " << vectorSize << endl;
+
+    //Every myosin node must find its own possible connections
+    for(unsigned int i = 0; i < myosin_nodes.size(); i++){
+        //cout << "ENTERING LOOP i" << endl;
+
+        Coord myo_location = myosin_nodes.at(i)->get_Node_Location();
+        cout << "myosin node = (" << myo_location.get_X() << " , " << myo_location.get_Y() << ")" << endl;
+
+        //Loop through every actin filament
+        for(unsigned int j = 0; j < actinfils.size(); j++){
+            //cout << "ENTERING LOOP j" << endl;
+
+            int fil_num = actinfils.at(j)->get_Filament_Num();
+            cout << "Actin filament #:" << fil_num << endl;
+
+            vector<shared_ptr<Actin_Node>> actins; //will store actin nodes here
+            actinfils.at(j)->get_Actin_Nodes_Vec(actins);
+            shared_ptr<Actin_Node> actin_fil_node = NULL;
+
+            //Go through every node in the actin filament
+            for(unsigned int k = 0; k < actins.size(); k++){
+                //cout << "ENTERING LOOP k" << endl;
+
+                actin_fil_node = actins.at(k);
+                Coord actin_location = actin_fil_node->get_Node_Location();
+                cout << "actin node: (" << actin_location.get_X() << " , " << actin_location.get_Y() << ")" << endl;
+                
+                //Calculate the distance between the actin nodes and myosin node:
+                Coord diff_vec = actin_location - myo_location;
+                cout << "diff vec = " << actin_location << " - " << myo_location << " = " << diff_vec << endl;
+
+                double distance = diff_vec.length();
+                cout << "distance = " << distance << endl;
+
+                //Check is the distance is less than or equal to connection_radius. If yes, it is a possible actin connection
+                if(distance <= connection_radius){
+                    cout << "Possible connection found" << endl;
+                    possible_filament_connections.push_back(actinfils.at(j));
+                    break; //move on to the next actin filament
+                }
+
+            }
+        }
+
+    }
+
+
+
+    return;
+}
+
+//***Form actomyosin connections***//
+void Myosin::formActomyoConnections(int Ti, double connection_radius){
+    cout << "MYO MINI-FIL #" << this->get_Myosin_Num() << endl;
+
+    //Get the neighboring actin filaments
+    vector<shared_ptr<Filament>> nbhrActinFilaments;
+    nbhrActinFilaments = this -> get_Possible_Connections();
+
+    if(nbhrActinFilaments.empty()){
+        cout << "NO neighboring actin filaments. NO actomyo connection formed!!" << endl;
+    }
+    else{
+        //for double checking purposes:
+        cout << "Neighboring actin filaments:" << endl;
+        for(unsigned int i = 0; i < nbhrActinFilaments.size(); i++){
+            cout << nbhrActinFilaments.at(i)->get_Filament_Num() << endl;
+        }
+
+        //Every myosin node find/form your connection
+        for(unsigned int i = 0; i < myosin_nodes.size(); i++){
+            
+            Coord myo_location = myosin_nodes.at(i)->get_Node_Location();
+            cout << "myosin node = " << myo_location << endl;
+            
+            myosin_nodes.at(i)->connect_To_Filament(connection_radius);
+            
+        }
+
+
+    }
     return;
 }
 
@@ -244,6 +357,18 @@ void Myosin::print_Myosin_Node_Data(ofstream& ofs, int Ti){
 //This function prints out the myosin mini-filament data
 void Myosin::print_MiniFilament_Data(ofstream& ofs, int Ti){
     ofs << this->get_Myosin_Num() << ' ' << this->get_Num_Myosin_Nodes() << endl;
+
+    vector<shared_ptr<Filament>> actinfilaments;
+    actinfilaments = this -> get_Possible_Connections();
+        if(actinfilaments.empty()){
+            ofs << "NO POSSIBLE CONNECTIONS" << endl;
+        }
+        else{
+            for(unsigned int j = 0; j < actinfilaments.size(); j++){
+                ofs << "Possible actin connections:" << endl;
+                ofs << actinfilaments.at(j)->get_Filament_Num() << endl;
+            }
+        }
     return;
 }
 

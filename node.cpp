@@ -120,6 +120,16 @@ void Actin_Node::set_Right_Neighbor(shared_ptr<Actin_Node> right_nbh){
     return;
 }
 
+void Actin_Node::set_Connected_Myosin_Node(shared_ptr<Myosin_Node> myo_node){
+    this->curr_conn_myo_node = myo_node;
+    return;
+}
+
+void Actin_Node::set_Conn_Myosin_MiniFilament(shared_ptr<Myosin> minifilament){
+    this->curr_conn_minifilament = minifilament;
+    return;
+}
+
 void Actin_Node::set_K_Linear_Actin(double k_linear){
     this->k_linear_actin = k_linear;
     return;
@@ -168,16 +178,16 @@ void Actin_Node::calc_Current_Angle(){
         // if crossproduct > 0 then angle is between 0 and pi
         // if crossproduct < 0 then angle is > pi and we need to do 2pi-theta to get correct angle
     
-    double crossProduct = left_vec.cross(right_vec);
+    // double crossProduct = left_vec.cross(right_vec);
 
-    if(crossProduct < 0.0){
-        theta = 2 * pi - theta;
-    }
+    // if(crossProduct < 0.0){
+    //     theta = 2 * pi - theta;
+    // }
 
     //update the angle and cross product in protected member variables
     my_current_angle = theta;
     cout << "My angle: " << theta << endl;
-    cross_product = crossProduct;
+    //cross_product = crossProduct;
 
     return;  
 }
@@ -189,6 +199,21 @@ void Actin_Node::set_Current_Angle(double my_angle){
 
 void Actin_Node::set_Equi_Angle(double new_angle){
     this->equi_angle = new_angle;
+    return;
+}
+
+void Actin_Node::set_K_Linear_Actomyo_Conn(double k_lin){
+    this->k_linear_actomyoConn = k_lin;
+    return;
+}
+
+void Actin_Node::set_Actomyo_Equi_Len(double equil_len){
+    this->actomyo_spring_equi_len = equil_len;
+    return;
+}
+
+void Actin_Node::set_Myo_Pull_Force(double pull_force){
+    this->myo_pull_force = pull_force;
     return;
 }
 
@@ -226,29 +251,67 @@ void Actin_Node::sound_Off_Neighbors(){
 //***calculates total force on the actin node
 void Actin_Node::calculate_Forces(int Ti){
     cout << "Calculating total actin force..." << endl;
+    cout << "Ti = " << Ti << endl;
 
     //------Linear force from left and right neighbors------
     //since 1st node doesn't have L nhbr => F^L = 0. Since last node doesn't have R nhbr => F^R = 0.
     //else F^spring = F^L + F^R
     cout << "Linear spring force being calculated..." << endl;
+    cout << "==========================================" << endl;
     Coord F_linear = calc_Linear_Force();
     cout << "F_linear = " << F_linear << endl;
 
     //------Bending force from left and right neighbors------
     cout << "Bending force being calculated..." << endl;
+    cout << "==========================================" << endl;
     Coord F_bending = calc_Bending_Force();
     cout << "F_bending = " << F_bending << endl;
 
     //------Stochastic/random force------
     cout <<"Stochastic/random force being calculated..." << endl;
-    Coord F_stoch = calc_Stochastic_Force();
-    cout << "F_stoch = " << F_stoch << endl;
+    cout << "==========================================" << endl;
+    Coord F_stoch;
+    if(STOCHASTIC_FORCE_ACTIN){
+        F_stoch = calc_Stochastic_Force();
+        cout << "F_stoch = " << F_stoch << endl;
+    }
+    else{
+        cout << "Stochastic force OFF" << endl;
+        cout << "F_stoch = " << F_stoch << endl;
+    }
+    // Coord F_stoch = calc_Stochastic_Force();
+    // cout << "F_stoch = " << F_stoch << endl;
 
+    //------Actomyosin connection force------
+    cout <<"Actomyosin connection force being calculated..." << endl;
+    cout << "==========================================" << endl;
+    Coord F_actomyo_conn;
+    if(Ti==0){
+        //Coord F_actomyo_conn;
+        cout << "No connection! F_actomyo_conn = " << F_actomyo_conn << endl;
+    }
+    else{
+        F_actomyo_conn = calc_Actomyo_Conn_Force();
+        cout << "F_actomyo_conn = " << F_actomyo_conn << endl;
+    }
+
+    //------Myosin pulling force------
+    cout <<"Myosin pulling force due conn being calculated..." << endl;
+    cout << "=================================================" << endl;
+    Coord F_myo_pull;
+    if(Ti==0){
+        //Coord F_actomyo_conn;
+        cout << "No connection! F_myo_pull = " << F_myo_pull << endl;
+    }
+    else{
+        F_myo_pull = calc_Myosin_Pull_Force();
+        cout << "F_myo_pull = " << F_myo_pull << endl;
+    }
 
     //total force actin on node
-    new_total_force = F_linear + F_bending + F_stoch;
+    new_total_force = F_linear + F_bending + F_stoch + F_actomyo_conn + F_myo_pull;
 
-    cout << "Total force = " << F_linear << " + " << F_bending << " + " << F_stoch << endl;
+    cout << "Total force = " << F_linear << " + " << F_bending << " + " << F_stoch << " + " << F_actomyo_conn << " + " << F_myo_pull << " = " << new_total_force << endl;
 
     return;
 }
@@ -527,6 +590,253 @@ double Actin_Node::get_Random_Number(double mean, double stddev){
     return rand_num;
 }
 
+//***Actomyosin connection linear spring force
+Coord Actin_Node::calc_Actomyo_Conn_Force(){
+    Coord F_actomyo;
+
+    //For double checking-purposes
+    cout << "Actin filament # = " << this->get_My_Filament()->get_Filament_Num() << endl;
+    cout << "Actin node loc = " << this->get_Node_Location() << endl;
+
+    //Get connected myosin node:
+    if(curr_conn_myo_node == NULL){
+        cout << "NO ACTOMYO CONNECTION available!" << endl;
+        //Will return F_actomyo = (0,0)
+    }
+    else{
+        cout << "Connection with mini-filament = " << curr_conn_minifilament->get_Myosin_Num() << endl;
+        cout << "Connected myo node = " << curr_conn_myo_node->get_Node_Location() << endl;
+
+        cout << "Calc linear force from connection with myosin node" << endl;
+        Coord F_conn = linear_Actomyo_Spring_Equation(curr_conn_myo_node);
+        cout << "F_conn = " << F_conn<< endl;
+
+        F_actomyo = F_conn;
+    }
+
+    cout << "F_actomyo = " << F_actomyo << endl;
+
+    return F_actomyo;
+}
+
+Coord Actin_Node::linear_Actomyo_Spring_Equation(shared_ptr<Myosin_Node> myo_node){
+    if(myo_node == NULL){
+        cout << "ERROR: Accessing a NULL pointer. Will abort!!!" << endl;
+        exit(1);
+    }
+
+    Coord F_connection;
+
+    //compute the difference vector and length
+    Coord diff_vec = myo_node->get_Node_Location() - my_location;
+    double diff_length = diff_vec.length();
+    cout << "diff_vec = " << myo_node->get_Node_Location() << " - " << my_location << " = " << diff_vec << endl;
+    cout << "diff_length = " << diff_length << endl;
+
+    //Avoid dividing by 0:
+    if(diff_length == 0){
+        cout << "Avoiding 0 in the denominator. Returning (0,0)" << endl;
+        return Coord(0,0);
+    }
+
+    //F_actomyo = k(|node_i - node_j| - l_equi)((node_i - node_j)/|node_i - node_j|)
+    cout << "k_linear_actomyoConn = " << k_linear_actomyoConn << endl;
+    cout << "actomyo_spring_equi_len = " << actomyo_spring_equi_len << endl;
+
+    F_connection = (diff_vec/diff_length)*k_linear_actomyoConn*(diff_length - this->actomyo_spring_equi_len);
+    cout << "Actomyosin connection force: " << F_connection << endl;
+
+    return F_connection;
+
+}
+
+//***Myosin pulling force from conn
+Coord Actin_Node::calc_Myosin_Pull_Force(){
+    Coord F_pull;
+
+    //For double checking-purposes
+    cout << "Actin filament # = " << this->get_My_Filament()->get_Filament_Num() << endl;
+    cout << "Actin node loc = " << this->get_Node_Location() << endl;
+
+    //Get connected myosin node:
+    if(curr_conn_myo_node == NULL){
+        cout << "NO MYO PULLING FORCE because no actomyo connection available!" << endl;
+        //Will return F_actomyo = (0,0)
+    }
+    else{
+        cout << "Connection with mini-filament = " << curr_conn_minifilament->get_Myosin_Num() << endl;
+        cout << "Connected myo node = " << curr_conn_myo_node->get_Node_Location() << endl;
+
+        cout << "Applying myosin pulling force due to connection..." << endl;
+        Coord F_myo = myosin_Pulling_Force(curr_conn_myo_node);
+        cout << "F_myo = " << F_myo<< endl;
+
+        F_pull = F_myo;
+    }
+
+    cout << "F_pull = " << F_pull << endl;
+
+    return F_pull;
+}
+
+Coord Actin_Node::myosin_Pulling_Force(shared_ptr<Myosin_Node> myo_node){
+    if(myo_node == NULL){
+        cout << "ERROR: Accessing a NULL pointer. Will abort!!!" << endl;
+        exit(1);
+    }
+
+    Coord F_myosin_force;
+
+    //The pulling force depends on the barbed end, since that determines in which direction the myosin will move.
+    //The actin filament slides in the opposite direction
+    bool first_isBarbedEnd = this->get_My_Filament()->get_First_Node_Polarity();
+    bool last_isBarbedEnd = this->get_My_Filament()->get_Last_Node_Polarity();
+
+    //Get the actin nodes in the filament of this actin
+    vector<shared_ptr<Actin_Node>> actins; //will store actin nodes here
+    this->get_My_Filament()->get_Actin_Nodes_Vec(actins);
+
+    //For double-checking purposes (comment out once done)
+    for(unsigned int k = 0; k < actins.size(); k++){
+        Coord actin_location = actins.at(k)->get_Node_Location();
+        cout << "actin node = " << actin_location << endl;
+    }
+
+    //Get first and last node
+    int last = actins.size() - 1;
+    shared_ptr<Actin_Node> first_node = actins.at(0);
+    shared_ptr<Actin_Node> last_node = actins.at(last);
+    Coord first_loc = first_node->get_Node_Location();
+    Coord last_loc = last_node->get_Node_Location();
+
+    cout << "first actin node = " << first_loc << endl;
+    cout << "last actin node = " << last_loc << endl;
+    //cout << "my loc = " << my_location << endl;
+
+    //The barbed end is the FIRST node in the filament: (+) o----o----o----o (-)
+        //(*)Filament needs to slide towards the right
+        //(*)Myosin to the left to the positive end
+    if(first_isBarbedEnd){
+        cout << "FIRST NODE is barbed end" << endl;
+
+        if(first_loc == my_location){
+            cout << "MADE IT TO BARBED END!!" << endl;
+
+            //first node doesn't have a left neighbor (its itself) so we use right neighbor
+            Coord right_nbr = this->get_Right_Neighbor()->get_Node_Location();
+            cout << "right neighbor = " << right_nbr << endl;
+
+            //compute the difference vector and length
+            Coord diff_vec = right_nbr - my_location;
+            double diff_length = diff_vec.length();
+            cout << "diff_vec = " << right_nbr << " - " << my_location << " = " << diff_vec << endl;
+            cout << "diff_length = " << diff_length << endl;
+
+            //Avoid dividing by 0:
+            if(diff_length == 0){
+                cout << "Avoiding 0 in the denominator. Returning (0,0)" << endl;
+                return Coord(0,0);
+            }
+
+            //myosin_force = F^0_myo((node_i - node_j)/|node_i - node_j|)
+            cout << "myo_pull_force = " << myo_pull_force << endl;
+            
+            F_myosin_force = (diff_vec/diff_length)*myo_pull_force;
+            
+            cout << "F_myosin_force = " << F_myosin_force << endl;
+
+        }
+        else{
+            //Get left nhbr
+            Coord left_nbr = this->get_Left_Neighbor()->get_Node_Location();
+            cout << "left neighbor = " << left_nbr << endl;
+
+            //compute the difference vector and length
+            Coord diff_vec = my_location - left_nbr;
+            double diff_length = diff_vec.length();
+            cout << "diff_vec = " << my_location << " - " << left_nbr << " = " << diff_vec << endl;
+            cout << "diff_length = " << diff_length << endl;
+
+            //Avoid dividing by 0:
+            if(diff_length == 0){
+                cout << "Avoiding 0 in the denominator. Returning (0,0)" << endl;
+                return Coord(0,0);
+            }
+
+            //myosin_force = F^0_myo((node_i - node_j)/|node_i - node_j|)
+            cout << "myo_pull_force = " << myo_pull_force << endl;
+            
+            F_myosin_force = (diff_vec/diff_length)*myo_pull_force;
+            
+            cout << "F_myosin_force = " << F_myosin_force << endl;
+        }
+
+    }
+    else if(last_isBarbedEnd){
+        //The barbed end is the LAST node in the filament: (-) o----o----o----o (+)
+            //(*)Filament needs to slide towards the left
+            //(*)Myosin to the right to the positive end   
+        cout << "LAST NODE is barbed end" << endl;
+
+        if(last_loc == my_location){
+            cout << "MADE IT TO BARBED END!!" << endl;
+
+            //The last node doesn't have a right neighbor (its itself) so we use left neighbor
+            Coord left_nbr = this->get_Left_Neighbor()->get_Node_Location();
+            cout << "left neighbor = " << left_nbr << endl;
+
+            //compute the difference vector and length
+            Coord diff_vec = left_nbr - my_location;
+            double diff_length = diff_vec.length();
+            cout << "diff_vec = " << left_nbr << " - " << my_location << " = " << diff_vec << endl;
+            cout << "diff_length = " << diff_length << endl;
+
+            //Avoid dividing by 0:
+            if(diff_length == 0){
+                cout << "Avoiding 0 in the denominator. Returning (0,0)" << endl;
+                return Coord(0,0);
+            }
+
+            //myosin_force = F^0_myo((node_i - node_j)/|node_i - node_j|)
+            cout << "myo_pull_force = " << myo_pull_force << endl;
+            
+            F_myosin_force = (diff_vec/diff_length)*myo_pull_force;
+            
+            cout << "F_myosin_force = " << F_myosin_force << endl;
+        }
+        else{
+            //get right neighbor:
+            Coord right_nbr = this->get_Right_Neighbor()->get_Node_Location();
+            cout << "right neighbor = " << right_nbr << endl;
+
+            //compute the difference vector and length
+            Coord diff_vec = my_location - right_nbr;
+            double diff_length = diff_vec.length();
+            cout << "diff_vec = " << my_location << " - " << right_nbr << " = " << diff_vec << endl;
+            cout << "diff_length = " << diff_length << endl;
+
+            //Avoid dividing by 0:
+            if(diff_length == 0){
+                cout << "Avoiding 0 in the denominator. Returning (0,0)" << endl;
+                return Coord(0,0);
+            }
+
+            //myosin_force = F^0_myo((node_i - node_j)/|node_i - node_j|)
+            cout << "myo_pull_force = " << myo_pull_force << endl;
+            
+            F_myosin_force = (diff_vec/diff_length)*myo_pull_force;
+            
+            cout << "F_myosin_force = " << F_myosin_force << endl;
+
+        }
+    }
+
+    cout << "F_myosin_force = " << F_myosin_force << endl;
+
+    return F_myosin_force;
+
+}
+
 
 //==============================
 //Destructor:
@@ -564,6 +874,31 @@ void Myosin_Node::set_Neighboring_Pair(shared_ptr<Myosin_Node> nbh_pair){
     return;
 }
 
+void Myosin_Node::set_If_Connected(bool conn){
+    this->connected = conn;
+    return;
+}
+
+void Myosin_Node::set_Connected_Filament(shared_ptr<Filament> filament){
+    this->curr_conn_filament = filament;
+    return;
+}
+
+void Myosin_Node::set_Connected_Actin_Node(shared_ptr<Actin_Node> node){
+    this->curr_conn_actin_node = node;
+    return;
+}
+
+void Myosin_Node::set_Prev_Connected_Filament(shared_ptr<Filament> prev_filament){
+    this->prev_conn_filament = prev_filament;
+    return;
+}
+
+void Myosin_Node::set_Prev_Connected_Actin_Node(shared_ptr<Actin_Node> prev_node){
+    this->prev_conn_actin_node = prev_node;
+    return;
+}
+
 void Myosin_Node::set_K_Linear_Myosin(double k_linear){
     this->k_linear_myosin = k_linear;
     return;
@@ -571,6 +906,21 @@ void Myosin_Node::set_K_Linear_Myosin(double k_linear){
 
 void Myosin_Node::set_Myosin_Equi_Len(double equi_len){
     this->myosin_spring_equi_len = equi_len;
+    return;
+}
+
+void Myosin_Node::set_K_Linear_Actomyo_Conn(double k_actomyo){
+    this->k_linear_actomyo_conn = k_actomyo;
+    return;
+}
+
+void Myosin_Node::set_Actomyo_Spring_Equi_Length(double equi_len){
+    this->actomyo_spring_equi_length = equi_len;
+    return;
+}
+
+void Myosin_Node::set_Myo_Pulling_Force(double pulling_force){
+    this->myo_pulling_force = pulling_force;
     return;
 }
 
@@ -586,6 +936,7 @@ void Myosin_Node::sound_Off_Nyosin_Node_Info(){
     cout << "Linear spring coeff: " << get_K_Linear_Myosin() << endl;
     cout << "Linear equilibrium length: " << get_Myosin_Equi_Len() << endl;
     cout << "Total force: " << get_Total_Force() << endl;
+    cout << "Connected?:" << get_If_Connected() << endl;
 
     return;
 }
@@ -603,21 +954,59 @@ void Myosin_Node::sound_Off_Neighboring_Pair(){
 //***calculates total force on the myosin node
 void Myosin_Node::calculate_Myosin_Forces(int Ti){
     cout << "Calculating total myosin force..." << endl;
+    cout << "Ti = " << Ti << endl;
 
     //------Linear force from neighboring pair------
     cout << "Myosin Linear Spring Force being calculated..." << endl;
+    cout << "=================================================" << endl;
     Coord F_linear_myo = calc_Myosin_Linear_Force();
     cout << "F_linear_myo = " << F_linear_myo << endl;
 
     //------Stochastic/random force------
     cout <<"Myosin Stochastic/random force being calculated..." << endl;
-    Coord F_stoch_myo = calc_Myosin_Stochastic_Force();
-    cout << "F_stoch_myo = " << F_stoch_myo << endl;
+    cout << "=================================================" << endl;
+    Coord F_stoch_myo;
+    if(STOCHASTIC_FORCE_MYOSIN){
+        F_stoch_myo = calc_Myosin_Stochastic_Force();
+        cout << "F_stoch_myo = " << F_stoch_myo << endl;
+    }
+    else{
+        cout << "Stochastic force OFF" << endl;
+        cout << "F_stoch_myo = " << F_stoch_myo << endl;
+    }
+    // Coord F_stoch_myo = calc_Myosin_Stochastic_Force();
+    // cout << "F_stoch_myo = " << F_stoch_myo << endl;
+
+    //------Actomyosin connection force------
+    cout <<"Actomyosin connection force being calculated..." << endl;
+    cout << "==========================================" << endl;
+    Coord F_actomyo_conn;
+    if(Ti==0){
+        //Coord F_actomyo_conn;
+        cout << "No connection! F_actomyo_conn = " << F_actomyo_conn << endl;
+    }
+    else{
+        F_actomyo_conn = calc_Actomyo_Connection_Force();
+        cout << "F_actomyo_conn = " << F_actomyo_conn << endl;
+    }
+
+    //------Myosin pulling force------
+    cout <<"Myosin pulling force due to conn being calculated..." << endl;
+    cout << "=================================================" << endl;
+    Coord F_myo_pull;
+    if(Ti==0){
+        //Coord F_actomyo_conn;
+        cout << "No connection! F_myo_pull = " << F_myo_pull << endl;
+    }
+    else{
+        F_myo_pull = calc_Myosin_Pulling_Force();
+        cout << "F_myo_pull = " << F_myo_pull << endl;
+    }
 
     //total force myosin on node
-    new_total_force = F_linear_myo + F_stoch_myo;
+    new_total_force = F_linear_myo + F_stoch_myo + F_actomyo_conn + F_myo_pull;
 
-    cout << "Total myosin force = " << F_linear_myo << " + " << F_stoch_myo << endl;
+    cout << "Total myosin force = " << F_linear_myo << " + " << F_stoch_myo << " + " << F_actomyo_conn << " + " << F_myo_pull << " = " << new_total_force << endl;
 
     return;
 }
@@ -697,6 +1086,748 @@ double Myosin_Node::get_Random_Num(double mean, double stddev){
     random_number = this->get_My_Myosin()->get_Network()->get_Normally_Distributed_Random_Number(mean, stddev);
     
     return random_number;
+}
+
+void Myosin_Node::connect_To_Filament(double radius){
+    cout << "connection radius = " << radius << endl;
+    cout << "myosin node loc = " << this->get_Node_Location() << endl;
+
+    //Get the neighboring actin filaments
+    vector<shared_ptr<Filament>> nbhrActinFilaments;
+    nbhrActinFilaments = this -> get_My_Myosin() -> get_Possible_Connections();
+    int num_Possible_Fils = nbhrActinFilaments.size();
+
+    //Get if myosin node is connected
+    bool isConnected = this->get_If_Connected();
+
+    if(nbhrActinFilaments.empty()){
+        cout << "NO neighboring actin filaments. NO actomyo connection formed!!" << endl;
+    }
+    else{
+        //for double checking purposes:
+        cout << "Neighboring actin filaments:" << endl;
+        for(unsigned int i = 0; i < nbhrActinFilaments.size(); i++){
+            cout << nbhrActinFilaments.at(i)->get_Filament_Num() << endl;
+        }
+
+        //If a connection exists, see if nbr actin node in the + direction is in range and update connection. If not keep connection. Also check if made it to barbed end
+        if(isConnected){
+            cout << "CURRENTLY CONNECTED. Myosin head looking to update connection..." << endl;
+
+            //Get myosin's connection info:
+            shared_ptr<Filament> connected_Filament = this->get_Connected_Filament();
+            shared_ptr<Actin_Node> connected_Actin_Node = this->get_Connected_Actin_Node();
+
+            int conn_Actin_Fil = connected_Filament->get_Filament_Num();
+            Coord conn_Actin_Node = connected_Actin_Node->get_Node_Location();
+
+            cout << "CURR connected filament = " << conn_Actin_Fil << endl;
+            cout << "CURR connected actin node = " << conn_Actin_Node << endl;
+
+            //Get the connected filament's polarity
+            bool actin_First_isBarbed = connected_Filament->get_First_Node_Polarity();
+            bool actin_Last_isBarbed = connected_Filament->get_Last_Node_Polarity();
+
+            cout << "FIRST is barbed end?: " << actin_First_isBarbed << endl;
+            cout << "LAST is barbed end?: " << actin_Last_isBarbed << endl;
+
+            //Get the connected filament's nodes
+            vector<shared_ptr<Actin_Node>> actins; //will store actin nodes here
+            connected_Filament->get_Actin_Nodes_Vec(actins);
+
+            //For double-checking purposes (comment out once done)
+            for(unsigned int k = 0; k < actins.size(); k++){
+                Coord actin_location = actins.at(k)->get_Node_Location();
+                cout << "actin node = " << actin_location << endl;
+            }
+
+            //Get location of the first and last actin node of connected filament
+            int last = actins.size() - 1;
+            Coord first_Actin_Node = actins.at(0)->get_Node_Location();
+            Coord last_Actin_Node = actins.at(last)->get_Node_Location();
+
+            cout << "FIRST actin node = " << first_Actin_Node << endl;
+            cout << "LAST actin node = " << last_Actin_Node << endl;
+
+            //FIRST check if made it to barbed end. If reached (+) end
+                //1) disconnect i.e. connected = 0, clear current connected node and filament for both actin and myosin
+                //2) possibly remove filament from pool of possible filaments
+
+            if(actin_First_isBarbed == true && (conn_Actin_Node == first_Actin_Node)){
+            //if(actin_First_isBarbed == true){
+                cout << "MADE IT TO THE BARBED END (FIRST node is barbed)!!" << endl;
+                cout << "Disconnecting..." << endl;
+
+                //First store old connections:
+                this->set_Prev_Connected_Filament(this->get_Connected_Filament());
+                this->set_Prev_Connected_Actin_Node(this->get_Connected_Actin_Node());
+
+                cout << "PREV connected filament = " << this->get_Prev_Connected_Filament()-> get_Filament_Num() << endl;
+                cout << "PREV connected actin node = " << this->get_Prev_Connected_Actin_Node()->get_Node_Location() << endl;
+
+                //First clear actin node connections
+                this->get_Connected_Actin_Node()->set_Conn_Myosin_MiniFilament(nullptr);
+                this->get_Connected_Actin_Node()->set_Connected_Myosin_Node(nullptr);
+
+                cout << "actin node loc = " << conn_Actin_Node << endl;
+                cout << "verifying loc = " << this->get_Connected_Actin_Node()->get_Node_Location() << endl;
+                cout << "actin connected to minifilament = " << (this->get_Connected_Actin_Node()->get_Conn_Myosin_MiniFilament() ? "Not null" : "null") << endl;
+                cout << "actin connected to node = " << (this->get_Connected_Actin_Node()->get_Conn_Myosin_Node() ? "Not null" : "null") << endl;
+                
+                //Disconnect and clear myosin node connections:
+                this->set_If_Connected(false); //connected = 0
+                this->set_Connected_Filament(nullptr);
+                this->set_Connected_Actin_Node(nullptr);
+
+                cout << "MYOSIN node connected? = " << this->get_If_Connected() << endl;
+                cout << "connected filament = " << (this->get_Connected_Filament() ? "Not null" : "null") << endl;
+                cout << "connected actin node = " << (this->get_Connected_Actin_Node()? "Not null" : "null") << endl;
+
+                cout << "DISCONNECTED!" << endl;
+            }
+            else if(actin_Last_isBarbed == true && (conn_Actin_Node == last_Actin_Node)){
+            //else if(actin_Last_isBarbed == true){
+                cout << "MADE IT TO THE BARBED END (LAST node is barbed)!!" << endl;
+                cout << "Disconnecting..." << endl;
+
+                //First store old connections:
+                this->set_Prev_Connected_Filament(this->get_Connected_Filament());
+                this->set_Prev_Connected_Actin_Node(this->get_Connected_Actin_Node());
+
+                cout << "PREV connected filament = " << this->get_Prev_Connected_Filament()-> get_Filament_Num() << endl;
+                cout << "PREV connected actin node = " << this->get_Prev_Connected_Actin_Node()->get_Node_Location() << endl;
+
+                //First clear actin node connections
+                this->get_Connected_Actin_Node()->set_Conn_Myosin_MiniFilament(nullptr);
+                this->get_Connected_Actin_Node()->set_Connected_Myosin_Node(nullptr);
+
+                cout << "actin node loc = " << conn_Actin_Node << endl;
+                cout << "verifying loc = " << this->get_Connected_Actin_Node()->get_Node_Location() << endl;
+                cout << "actin connected to minifilament = " << (this->get_Connected_Actin_Node()->get_Conn_Myosin_MiniFilament() ? "Not null" : "null") << endl;
+                cout << "actin connected to node = " << (this->get_Connected_Actin_Node()->get_Conn_Myosin_Node() ? "Not null" : "null") << endl;
+                
+                //Disconnect and clear myosin node connections:
+                this->set_If_Connected(false); //connected = 0
+                this->set_Connected_Filament(nullptr);
+                this->set_Connected_Actin_Node(nullptr);
+
+                cout << "MYOSIN node connected? = " << this->get_If_Connected() << endl;
+                cout << "connected filament = " << (this->get_Connected_Filament() ? "Not null" : "null") << endl;
+                cout << "connected actin node = " << (this->get_Connected_Actin_Node()? "Not null" : "null") << endl;
+
+                cout << "DISCONNECTED!" << endl;
+            }
+            else{
+                //NEXT, see if nbr actin node in the + direction is in range and update connection. If not keep connection.
+                cout << "SEARCHING if nbring actin node in the + direction is in range..." << endl;
+
+                //If barbed end is FIRST node (move in Left direction)
+                if(actin_First_isBarbed){
+                    cout << "First actin node is + end..." << endl;
+
+                    //Get current actin connected node's LEFT nhbr
+                    shared_ptr<Actin_Node> left_Actin_Nbr = connected_Actin_Node->get_Left_Neighbor();
+                    Coord left_Actin_Loc = left_Actin_Nbr->get_Node_Location();
+
+                    cout << "LEFT actin node (possible conn) = " << left_Actin_Loc << endl;
+                
+                    //Calculate the distance between the myosin node and NEW possible conn
+                    Coord diff_vec = left_Actin_Loc - my_location;
+                    cout << "diff vec = " << left_Actin_Loc << " - " << my_location << " = " << diff_vec << endl;
+
+                    double distance = diff_vec.length();
+                    cout << "distance = " << distance << endl;
+
+                    //double r_capture = 0.35; //for testing while writing code 
+
+                    //Check is the distance is less than or equal to connection_radius. If yes, form connection
+                    //if(distance <= r_capture){ //for testing while writing code
+                    if(distance <= radius){
+                        cout << "NEW CONNECTION found towards (+) end.." << endl;
+
+                        //Store previous connections:
+                        this->set_Prev_Connected_Actin_Node(this->get_Connected_Actin_Node());
+                        this->set_Prev_Connected_Filament(this->get_Connected_Filament());
+                        cout << "PREV connected filament = " << this->get_Prev_Connected_Filament()-> get_Filament_Num() << endl;
+                        cout << "PREV connected actin node = " << this->get_Prev_Connected_Actin_Node()->get_Node_Location() << endl;
+
+                        //RELEASE the CURRENT connected node
+                        this->get_Connected_Actin_Node()->set_Conn_Myosin_MiniFilament(nullptr);
+                        this->get_Connected_Actin_Node()->set_Connected_Myosin_Node(nullptr);
+
+                        cout << "actin node loc = " << conn_Actin_Node << endl;
+                        cout << "verifying loc = " << this->get_Connected_Actin_Node()->get_Node_Location() << endl;
+                        cout << "actin connected to minifilament = " << (this->get_Connected_Actin_Node()->get_Conn_Myosin_MiniFilament() ? "Not null" : "null") << endl;
+                        cout << "actin connected to node = " << (this->get_Connected_Actin_Node()->get_Conn_Myosin_Node() ? "Not null" : "null") << endl;
+                
+                        cout << "UPDATING CONNECTIONS..." << endl;
+
+                        //Update new connections:
+                        //MYOSIN:
+                        this->set_Connected_Actin_Node(left_Actin_Nbr);
+                        this->set_Connected_Filament(connected_Filament);
+
+                        cout << "myosin connected = " << this->get_If_Connected() << endl;
+                        cout << "connected filament = " << this->get_Connected_Filament()->get_Filament_Num() << endl;
+                        cout << "NEW connected actin node = " << this->get_Connected_Actin_Node()->get_Node_Location() << endl;
+
+                        //ACTIN:
+                        left_Actin_Nbr->set_Connected_Myosin_Node(this->shared_from_this());
+                        left_Actin_Nbr->set_Conn_Myosin_MiniFilament(this->get_My_Myosin());
+
+                        cout << "NEW actin node loc = " << left_Actin_Nbr->get_Node_Location() << endl;
+                        cout << "NEW actin connected to node = " << left_Actin_Nbr->get_Conn_Myosin_Node()->get_Node_Location() << endl;
+                        cout << "NEW actin connected to minifilament = " << left_Actin_Nbr->get_Conn_Myosin_MiniFilament()->get_Myosin_Num() << endl;
+
+                        cout << "NEW CONNECTION MADE!" << endl;
+                            
+                    }
+                    else{
+                        // cout << "KEEPING prev connections..." << endl;
+
+                        // cout << "myosin connected = " << this->get_If_Connected() << endl;
+                        // cout << "SAME connected filament = " << this->get_Connected_Filament()->get_Filament_Num() << endl;
+                        // cout << "SAME connected actin node = " << this->get_Connected_Actin_Node()->get_Node_Location() << endl;
+
+                        // cout << "actin node loc = " << this->get_Connected_Actin_Node()->get_Node_Location() << endl;
+                        // cout << "actin connected to minifilament = " << this->get_Connected_Actin_Node()->get_Conn_Myosin_MiniFilament()->get_Myosin_Num() << endl;
+                        // cout << "actin connected to node = " << this->get_Connected_Actin_Node()->get_Conn_Myosin_Node()->get_Node_Location() << endl;
+
+                        //Check current connection
+                        cout << "CHECKING if prev connection still in range..." << endl;
+                        cout << "myosin connected = " << this->get_If_Connected() << endl;
+                        cout << "CURRENT connected filament = " << this->get_Connected_Filament()->get_Filament_Num() << endl;
+                        cout << "CURRENT connected actin node = " << this->get_Connected_Actin_Node()->get_Node_Location() << endl;
+
+                        Coord current_conn_node = this->get_Connected_Actin_Node()->get_Node_Location();
+
+                        //Calculate the distance between the myosin node and NEW possible conn
+                        Coord diff_vec = current_conn_node - my_location;
+                        cout << "diff vec = " << current_conn_node << " - " << my_location << " = " << diff_vec << endl;
+
+                        double distance = diff_vec.length();
+                        cout << "distance = " << distance << endl;  
+
+                        //If still in range, KEEP same connection
+                        if(distance <= radius){
+                            cout << "KEEPING prev connections..." << endl;
+
+                            cout << "myosin connected = " << this->get_If_Connected() << endl;
+                            cout << "SAME connected filament = " << this->get_Connected_Filament()->get_Filament_Num() << endl;
+                            cout << "SAME connected actin node = " << this->get_Connected_Actin_Node()->get_Node_Location() << endl;
+
+                            cout << "actin node loc = " << this->get_Connected_Actin_Node()->get_Node_Location() << endl;
+                            // cout << "actin connected to minifilament = " << this->get_Connected_Actin_Node()->get_Conn_Myosin_MiniFilament()->get_Myosin_Num() << endl;
+                            // cout << "actin connected to node = " << this->get_Connected_Actin_Node()->get_Conn_Myosin_Node()->get_Node_Location() << endl;
+                        }
+                        else{
+                            //If no longer in range, DISCONNECT
+                            cout << "PREVIOUS connection NO LONGER in range..." << endl;
+                            cout << "Disconnecting..." << endl;
+
+                            //First store old connections:
+                            this->set_Prev_Connected_Filament(this->get_Connected_Filament());
+                            this->set_Prev_Connected_Actin_Node(this->get_Connected_Actin_Node());
+
+                            cout << "PREV connected filament = " << this->get_Prev_Connected_Filament()-> get_Filament_Num() << endl;
+                            cout << "PREV connected actin node = " << this->get_Prev_Connected_Actin_Node()->get_Node_Location() << endl;
+
+                            //First clear actin node connections
+                            this->get_Connected_Actin_Node()->set_Conn_Myosin_MiniFilament(nullptr);
+                            this->get_Connected_Actin_Node()->set_Connected_Myosin_Node(nullptr);
+
+                            cout << "actin node loc = " << conn_Actin_Node << endl;
+                            cout << "verifying loc = " << this->get_Connected_Actin_Node()->get_Node_Location() << endl;
+                            cout << "actin connected to minifilament = " << (this->get_Connected_Actin_Node()->get_Conn_Myosin_MiniFilament() ? "Not null" : "null") << endl;
+                            cout << "actin connected to node = " << (this->get_Connected_Actin_Node()->get_Conn_Myosin_Node() ? "Not null" : "null") << endl;
+                            
+                            //Disconnect and clear myosin node connections:
+                            this->set_If_Connected(false); //connected = 0
+                            this->set_Connected_Filament(nullptr);
+                            this->set_Connected_Actin_Node(nullptr);
+
+                            cout << "MYOSIN node connected? = " << this->get_If_Connected() << endl;
+                            cout << "connected filament = " << (this->get_Connected_Filament() ? "Not null" : "null") << endl;
+                            cout << "connected actin node = " << (this->get_Connected_Actin_Node()? "Not null" : "null") << endl;
+
+                            cout << "DISCONNECTED!" << endl;
+
+                        }
+
+                    }
+
+                }
+                else if(actin_Last_isBarbed){
+                    //If barbed end is LAST node move in Right direction
+                    cout << "Last actin node is + end..." << endl;
+
+                    //Get current actin connected node's RIGHT nhbr
+                    shared_ptr<Actin_Node> right_Actin_Nbr = connected_Actin_Node->get_Right_Neighbor();
+                    Coord right_Actin_Loc = right_Actin_Nbr->get_Node_Location();
+
+                    cout << "RIGHT actin node (possible conn) = " << right_Actin_Loc << endl;
+
+                    //Calculate the distance between the myosin node and NEW possible conn
+                    Coord diff_vec = right_Actin_Loc - my_location;
+                    cout << "diff vec = " << right_Actin_Loc << " - " << my_location << " = " << diff_vec << endl;
+
+                    double distance = diff_vec.length();
+                    cout << "distance = " << distance << endl;
+
+                    //double r_capture = 0.35; //for testing while writing code 
+
+                    //Check is the distance is less than or equal to connection_radius. If yes, form connection
+                    //if(distance <= r_capture){ //for testing while writing code
+                    if(distance <= radius){
+                        cout << "NEW CONNECTION found towards (+) end.." << endl;
+
+                        //Store previous connections:
+                        this->set_Prev_Connected_Actin_Node(this->get_Connected_Actin_Node());
+                        this->set_Prev_Connected_Filament(this->get_Connected_Filament());
+                        cout << "PREV connected filament = " << this->get_Prev_Connected_Filament()-> get_Filament_Num() << endl;
+                        cout << "PREV connected actin node = " << this->get_Prev_Connected_Actin_Node()->get_Node_Location() << endl;
+
+                        //RELEASE the CURRENT connected node
+                        this->get_Connected_Actin_Node()->set_Conn_Myosin_MiniFilament(nullptr);
+                        this->get_Connected_Actin_Node()->set_Connected_Myosin_Node(nullptr);
+
+                        cout << "actin node loc = " << conn_Actin_Node << endl;
+                        cout << "verifying loc = " << this->get_Connected_Actin_Node()->get_Node_Location() << endl;
+                        cout << "actin connected to minifilament = " << (this->get_Connected_Actin_Node()->get_Conn_Myosin_MiniFilament() ? "Not null" : "null") << endl;
+                        cout << "actin connected to node = " << (this->get_Connected_Actin_Node()->get_Conn_Myosin_Node() ? "Not null" : "null") << endl;
+                    
+                        cout << "UPDATING CONNECTIONS..." << endl;
+
+                        //Update new connections:
+                        //MYOSIN:
+                        this->set_Connected_Actin_Node(right_Actin_Nbr);
+                        this->set_Connected_Filament(connected_Filament);
+
+                        cout << "myosin connected = " << this->get_If_Connected() << endl;
+                        cout << "connected filament = " << this->get_Connected_Filament()->get_Filament_Num() << endl;
+                        cout << "NEW connected actin node = " << this->get_Connected_Actin_Node()->get_Node_Location() << endl;
+
+                        //ACTIN:
+                        right_Actin_Nbr->set_Connected_Myosin_Node(this->shared_from_this());
+                        right_Actin_Nbr->set_Conn_Myosin_MiniFilament(this->get_My_Myosin());
+
+                        cout << "NEW actin node loc = " << right_Actin_Nbr->get_Node_Location() << endl;
+                        cout << "NEW actin connected to node = " << right_Actin_Nbr->get_Conn_Myosin_Node()->get_Node_Location() << endl;
+                        cout << "NEW actin connected to minifilament = " << right_Actin_Nbr->get_Conn_Myosin_MiniFilament()->get_Myosin_Num() << endl;
+
+                        cout << "NEW CONNECTION MADE!" << endl;
+                    }
+                    else{
+                        // cout << "KEEPING prev connections..." << endl;
+
+                        // cout << "myosin connected = " << this->get_If_Connected() << endl;
+                        // cout << "SAME connected filament = " << this->get_Connected_Filament()->get_Filament_Num() << endl;
+                        // cout << "SAME connected actin node = " << this->get_Connected_Actin_Node()->get_Node_Location() << endl;
+
+                        // cout << "actin node loc = " << this->get_Connected_Actin_Node()->get_Node_Location() << endl;
+                        // cout << "actin connected to minifilament = " << this->get_Connected_Actin_Node()->get_Conn_Myosin_MiniFilament()->get_Myosin_Num() << endl;
+                        // cout << "actin connected to node = " << this->get_Connected_Actin_Node()->get_Conn_Myosin_Node()->get_Node_Location() << endl;
+
+                        //Check current connection
+                        cout << "CHECKING if prev connection still in range..." << endl;
+                        cout << "myosin connected = " << this->get_If_Connected() << endl;
+                        cout << "CURRENT connected filament = " << this->get_Connected_Filament()->get_Filament_Num() << endl;
+                        cout << "CURRENT connected actin node = " << this->get_Connected_Actin_Node()->get_Node_Location() << endl;
+
+                        Coord current_conn_node = this->get_Connected_Actin_Node()->get_Node_Location();
+
+                        //Calculate the distance between the myosin node and NEW possible conn
+                        Coord diff_vec = current_conn_node - my_location;
+                        cout << "diff vec = " << current_conn_node << " - " << my_location << " = " << diff_vec << endl;
+
+                        double distance = diff_vec.length();
+                        cout << "distance = " << distance << endl;  
+
+                        //If still in range, KEEP same connection
+                        if(distance <= radius){
+                            cout << "KEEPING prev connections..." << endl;
+
+                            cout << "myosin connected = " << this->get_If_Connected() << endl;
+                            cout << "SAME connected filament = " << this->get_Connected_Filament()->get_Filament_Num() << endl;
+                            cout << "SAME connected actin node = " << this->get_Connected_Actin_Node()->get_Node_Location() << endl;
+
+                            cout << "actin node loc = " << this->get_Connected_Actin_Node()->get_Node_Location() << endl;
+                            // cout << "actin connected to minifilament = " << this->get_Connected_Actin_Node()->get_Conn_Myosin_MiniFilament()->get_Myosin_Num() << endl;
+                            // cout << "actin connected to node = " << this->get_Connected_Actin_Node()->get_Conn_Myosin_Node()->get_Node_Location() << endl;
+                        }
+                        else{
+                            //If no longer in range, DISCONNECT
+                            cout << "PREVIOUS connection NO LONGER in range..." << endl;
+                            cout << "Disconnecting..." << endl;
+
+                            //First store old connections:
+                            this->set_Prev_Connected_Filament(this->get_Connected_Filament());
+                            this->set_Prev_Connected_Actin_Node(this->get_Connected_Actin_Node());
+
+                            cout << "PREV connected filament = " << this->get_Prev_Connected_Filament()-> get_Filament_Num() << endl;
+                            cout << "PREV connected actin node = " << this->get_Prev_Connected_Actin_Node()->get_Node_Location() << endl;
+
+                            //First clear actin node connections
+                            this->get_Connected_Actin_Node()->set_Conn_Myosin_MiniFilament(nullptr);
+                            this->get_Connected_Actin_Node()->set_Connected_Myosin_Node(nullptr);
+
+                            cout << "actin node loc = " << conn_Actin_Node << endl;
+                            cout << "verifying loc = " << this->get_Connected_Actin_Node()->get_Node_Location() << endl;
+                            cout << "actin connected to minifilament = " << (this->get_Connected_Actin_Node()->get_Conn_Myosin_MiniFilament() ? "Not null" : "null") << endl;
+                            cout << "actin connected to node = " << (this->get_Connected_Actin_Node()->get_Conn_Myosin_Node() ? "Not null" : "null") << endl;
+                            
+                            //Disconnect and clear myosin node connections:
+                            this->set_If_Connected(false); //connected = 0
+                            this->set_Connected_Filament(nullptr);
+                            this->set_Connected_Actin_Node(nullptr);
+
+                            cout << "MYOSIN node connected? = " << this->get_If_Connected() << endl;
+                            cout << "connected filament = " << (this->get_Connected_Filament() ? "Not null" : "null") << endl;
+                            cout << "connected actin node = " << (this->get_Connected_Actin_Node()? "Not null" : "null") << endl;
+
+                            cout << "DISCONNECTED!" << endl;
+
+                        }
+                    }
+
+                }
+ 
+
+            }
+            
+        }
+        else{
+            //If no connection has been formed (connected = 0), search for a connection
+            cout << "NOT CONNECTED. Myosin head searching for a connection..." << endl;
+
+            //Get nhbring pairs connected filament. Head#1 and head#2 CANNOT bind to the same actin filament
+            shared_ptr<Filament> pairs_Conn_Filament = this->get_Neighboring_Pair()->get_Connected_Filament();
+            cout << "Neighboring pairs connected filament = " << pairs_Conn_Filament<< endl;
+            
+            //Loop through every actin node of every filament to find connection
+            for(unsigned int i = 0; i < nbhrActinFilaments.size(); i++){
+                int fil_num = nbhrActinFilaments.at(i)->get_Filament_Num();
+                cout << "Actin filament #:" << fil_num << endl;
+
+                //get the actin nodes of nhbring filament
+                vector<shared_ptr<Actin_Node>> actins; //will store actin nodes here
+                nbhrActinFilaments.at(i)->get_Actin_Nodes_Vec(actins);
+                //shared_ptr<Actin_Node> actin_fil_node = NULL;
+
+                if(nbhrActinFilaments.at(i) != pairs_Conn_Filament){
+                    //Proceed to find connection
+                    cout << "Searching through available neighboring actin filaments..." << endl;
+
+                    //Go through every node in the actin filament
+                    for(unsigned int k = 0; k < actins.size(); k++){
+                        //actin_fil_node = actins.at(k);
+                        Coord actin_location = actins.at(k)->get_Node_Location();
+                        cout << "actin node = " << actin_location << endl;
+
+                        //Calculate the distance between the actin nodes and myosin node:
+                        Coord diff_vec = actin_location - my_location;
+                        cout << "diff vec = " << actin_location << " - " << my_location << " = " << diff_vec << endl;
+
+                        double distance = diff_vec.length();
+                        cout << "distance = " << distance << endl;
+
+                        //Check is the distance is less than or equal to connection_radius. If yes, form connection
+                        if(distance <= radius){
+                            cout << "CONNECTION FOUND.." << endl;
+
+                            //set myosin connections
+                            this->set_If_Connected(true); //connected = 1
+                            this->set_Connected_Filament(nbhrActinFilaments.at(i));
+                            this->set_Connected_Actin_Node(actins.at(k));
+
+                            cout << "connected = " << this->get_If_Connected() << endl;
+                            cout << "connected filament = " << this->get_Connected_Filament()->get_Filament_Num() << endl;
+                            cout << "connected actin node = " << this->get_Connected_Actin_Node()->get_Node_Location() << endl;
+
+                            //set actin connections
+                            actins.at(k)->set_Connected_Myosin_Node(this->shared_from_this());
+                            actins.at(k)->set_Conn_Myosin_MiniFilament(this->get_My_Myosin());
+
+                            cout << "actin node loc = " << actins.at(k)->get_Node_Location() << endl;
+                            cout << "actin connected to node = " << actins.at(k)->get_Conn_Myosin_Node()->get_Node_Location() << endl;
+                            cout << "actin connected to minifilament = " << actins.at(k)->get_Conn_Myosin_MiniFilament()->get_Myosin_Num() << endl;
+
+                            cout << "CONNECTION MADE!" << endl;
+                            break; //move on to the next actin filament
+                        }
+                    } 
+
+                    //if a connection was made, do not search through the rest of filaments
+                    if(this->get_If_Connected()){
+                        break;
+                    }
+                    
+                }
+                else if(num_Possible_Fils==1 && nbhrActinFilaments.at(i) == pairs_Conn_Filament){
+                    cout << "No connection available! Pairing head is already connected to only possible neghboring filament" << endl;
+                }
+            }
+
+            bool connctd = this->get_If_Connected();
+            if(connctd == false){
+                cout << "NO CONNECTION FOUND!!" << endl;
+            }
+
+        }
+ 
+    }
+    return;
+}
+
+//***Actomyosin connection linear spring force
+Coord Myosin_Node::calc_Actomyo_Connection_Force(){
+    Coord F_actomyo;
+
+    //For double checking-purposes
+    cout << "Myosin mini-filament # = " << this->get_My_Myosin()->get_Myosin_Num() << endl;
+    cout << "Myosin node loc = " << this->get_Node_Location() << endl;
+
+    if(connected == false || curr_conn_actin_node == NULL){
+        cout << "NO ACTOMYO CONNECTION available!" << endl;
+        //Will return F_actomyo = (0,0)
+    }
+    else{
+        cout << "Connection with filament = " << curr_conn_filament->get_Filament_Num() << endl;
+        cout << "Connected actin node = " << curr_conn_actin_node->get_Node_Location() << endl;
+
+        cout << "Calc linear force from connection with actin node" << endl;
+        Coord F_conn = linear_Spring_Actomyo_Equation(curr_conn_actin_node);
+        cout << "F_conn = " << F_conn<< endl;
+
+        F_actomyo = F_conn;
+    }
+
+    cout << "F_actomyo = " << F_actomyo << endl;
+
+    return F_actomyo;
+}
+
+Coord Myosin_Node::linear_Spring_Actomyo_Equation(shared_ptr<Actin_Node> actin_node){
+     if(actin_node == NULL){
+        cout << "ERROR: Accessing a NULL pointer. Will abort!!!" << endl;
+        exit(1);
+    }
+
+    Coord F_connection;
+
+    //compute the difference vector and length
+    Coord diff_vec = actin_node->get_Node_Location() - my_location;
+    double diff_length = diff_vec.length();
+    cout << "diff_vec = " << actin_node->get_Node_Location() << " - " << my_location << " = " << diff_vec << endl;
+    cout << "diff_length = " << diff_length << endl;
+
+    //Avoid dividing by 0:
+    if(diff_length == 0){
+        cout << "Avoiding 0 in the denominator. Returning (0,0)" << endl;
+        return Coord(0,0);
+    }
+
+    //F_actomyo = k(|node_i - node_j| - l_equi)((node_i - node_j)/|node_i - node_j|)
+    cout << "k_linear_actomyo_conn = " << k_linear_actomyo_conn << endl;
+    cout << "actomyo_spring_equi_length = " << actomyo_spring_equi_length << endl;
+
+    F_connection = (diff_vec/diff_length)*k_linear_actomyo_conn*(diff_length - this->actomyo_spring_equi_length);
+    cout << "Actomyosin connection force: " << F_connection << endl;
+
+    return F_connection;
+
+}
+
+//***Myosin pulling force from connection
+Coord Myosin_Node::calc_Myosin_Pulling_Force(){
+    Coord F_pulling;
+
+    //For double checking-purposes
+    cout << "Myosin mini-filament # = " << this->get_My_Myosin()->get_Myosin_Num() << endl;
+    cout << "Myosin node loc = " << this->get_Node_Location() << endl;
+
+    if(connected == false || curr_conn_actin_node == NULL){
+        cout << "NO ACTOMYO CONNECTION available!" << endl;
+        //Will return F_actomyo = (0,0)
+    }
+    else{
+        cout << "Connection with filament = " << curr_conn_filament->get_Filament_Num() << endl;
+        cout << "Connected actin node = " << curr_conn_actin_node->get_Node_Location() << endl;
+
+        cout << "Applying myosin pulling force due to connection..." << endl;
+        Coord F_myo = myosin_Pulling_Force(curr_conn_filament, curr_conn_actin_node);
+        cout << "F_myo = " << F_myo<< endl;
+
+        F_pulling = F_myo;
+    }
+
+    cout << "F_pulling = " << F_pulling << endl;
+
+    return F_pulling;
+}
+
+Coord Myosin_Node::myosin_Pulling_Force(shared_ptr<Filament> conn_filament, shared_ptr<Actin_Node> actin_node){
+    if(actin_node == NULL){
+        cout << "ERROR: Accessing a NULL pointer. Will abort!!!" << endl;
+        exit(1);
+    }
+
+    Coord F_myosin_pull;
+
+    // cout << "Connected filament = " << conn_filament->get_Filament_Num() << endl;
+    // cout << "Connected node = " << actin_node->get_Node_Location() << endl;
+    
+    //Get the actin nodes in the filament of this actin
+    vector<shared_ptr<Actin_Node>> actins; //will store actin nodes here
+    conn_filament->get_Actin_Nodes_Vec(actins);
+
+    //For double-checking purposes (comment out once done)
+    for(unsigned int k = 0; k < actins.size(); k++){
+        Coord actin_location = actins.at(k)->get_Node_Location();
+        cout << "actin node = " << actin_location << endl;
+    }
+
+    //Get the connected filaments polarity:
+    //The pulling force depends on the barbed end, since that determines in which direction the myosin will move.
+    //The actin filament slides in the opposite direction
+    bool first_isBarbedEnd = conn_filament->get_First_Node_Polarity();
+    bool last_isBarbedEnd = conn_filament->get_Last_Node_Polarity();
+
+    //Get first and last node
+    int last = actins.size() - 1;
+    shared_ptr<Actin_Node> first_node = actins.at(0);
+    shared_ptr<Actin_Node> last_node = actins.at(last);
+    Coord first_loc = first_node->get_Node_Location();
+    Coord last_loc = last_node->get_Node_Location();
+
+    cout << "first actin node = " << first_loc << endl;
+    cout << "last actin node = " << last_loc << endl;
+
+    //Get the connected filament's nodes
+    Coord curr_actin_node = actin_node->get_Node_Location();
+    cout << "curr_actin_node = " << curr_actin_node << endl;
+
+    //The barbed end is the FIRST node in the filament: (+) o----o----o----o (-)
+        //(*)Filament needs to slide towards the right
+        //(*)Myosin to the left to the positive end
+    if(first_isBarbedEnd){
+        cout << "FIRST ACTIN NODE is barbed end" << endl;
+
+        if(first_loc == curr_actin_node){
+            cout << "MADE IT TO BARBED END!!" << endl;
+
+            //First actin node doesn't have a left neighbor (its itself) so we use right neighbor
+            Coord right_actin_node = actin_node->get_Right_Neighbor()->get_Node_Location();
+            cout << "right actin neighbor = " << right_actin_node << endl;
+
+            //compute the difference vector and length
+            Coord diff_vec = curr_actin_node - right_actin_node;
+            double diff_length = diff_vec.length();
+            cout << "diff_vec = " << right_actin_node << " - " << curr_actin_node << " = " << diff_vec << endl;
+            cout << "diff_length = " << diff_length << endl;
+
+            //Avoid dividing by 0:
+            if(diff_length == 0){
+                cout << "Avoiding 0 in the denominator. Returning (0,0)" << endl;
+                return Coord(0,0);
+            }
+
+            //myosin_force = F^0_myo((node_i - node_j)/|node_i - node_j|)
+            cout << "myo_pulling_force = " << myo_pulling_force << endl;
+            
+            F_myosin_pull = (diff_vec/diff_length)*myo_pulling_force;
+            
+            cout << "F_myosin_pull = " << F_myosin_pull << endl;
+
+        }
+        else{
+            //Get the left neighbor
+            Coord left_actin_node = actin_node->get_Left_Neighbor()->get_Node_Location();
+            cout << "left actin neighbor = " << left_actin_node << endl;
+
+            //compute the difference vector and length
+            Coord diff_vec = left_actin_node - curr_actin_node;
+            double diff_length = diff_vec.length();
+            cout << "diff_vec = " << left_actin_node << " - " << curr_actin_node << " = " << diff_vec << endl;
+            cout << "diff_length = " << diff_length << endl;
+
+            //Avoid dividing by 0:
+            if(diff_length == 0){
+                cout << "Avoiding 0 in the denominator. Returning (0,0)" << endl;
+                return Coord(0,0);
+            }
+
+            //myosin_force = F^0_myo((node_i - node_j)/|node_i - node_j|)
+            cout << "myo_pulling_force = " << myo_pulling_force << endl;
+            
+            F_myosin_pull = (diff_vec/diff_length)*myo_pulling_force;
+            
+            cout << "F_myosin_pull = " << F_myosin_pull << endl;
+
+        }
+    }
+    else if(last_isBarbedEnd){
+        //The barbed end is the LAST node in the filament: (-) o----o----o----o (+)
+            //(*)Filament needs to slide towards the left
+            //(*)Myosin to the right to the positive end   
+        cout << "LAST ACTIN NODE is barbed end" << endl;
+
+        if(last_loc == curr_actin_node){
+            cout << "MADE IT TO BARBED END!!" << endl;
+
+            //The last node doesn't have a right neighbor (its itself) so we use left neighbor
+            Coord left_actin_node = actin_node->get_Left_Neighbor()->get_Node_Location();
+            cout << "left actin neighbor = " << left_actin_node << endl;
+
+            //compute the difference vector and length
+            Coord diff_vec = curr_actin_node - left_actin_node;
+            double diff_length = diff_vec.length();
+            cout << "diff_vec = " << curr_actin_node << " - " << left_actin_node << " = " << diff_vec << endl;
+            cout << "diff_length = " << diff_length << endl;
+
+            //Avoid dividing by 0:
+            if(diff_length == 0){
+                cout << "Avoiding 0 in the denominator. Returning (0,0)" << endl;
+                return Coord(0,0);
+            }
+
+            //myosin_force = F^0_myo((node_i - node_j)/|node_i - node_j|)
+            cout << "myo_pulling_force = " << myo_pulling_force << endl;
+            
+            F_myosin_pull = (diff_vec/diff_length)*myo_pulling_force;
+            
+            cout << "F_myosin_pull = " << F_myosin_pull << endl;
+
+        }
+        else{
+            //Get right neighbor
+            Coord right_actin_node = actin_node->get_Right_Neighbor()->get_Node_Location();
+            cout << "right actin neighbor = " << right_actin_node << endl;
+
+            //compute the difference vector and length
+            Coord diff_vec = right_actin_node - curr_actin_node;
+            double diff_length = diff_vec.length();
+            cout << "diff_vec = " << right_actin_node << " - " << curr_actin_node << " = " << diff_vec << endl;
+            cout << "diff_length = " << diff_length << endl;
+
+            //Avoid dividing by 0:
+            if(diff_length == 0){
+                cout << "Avoiding 0 in the denominator. Returning (0,0)" << endl;
+                return Coord(0,0);
+            }
+
+            //myosin_force = F^0_myo((node_i - node_j)/|node_i - node_j|)
+            cout << "myo_pulling_force = " << myo_pulling_force << endl;
+            
+            F_myosin_pull = (diff_vec/diff_length)*myo_pulling_force;
+            
+            cout << "F_myosin_pull = " << F_myosin_pull << endl;
+        }
+    }
+ 
+    cout << "F_myosin_pull = " << F_myosin_pull << endl;
+
+    return F_myosin_pull;
 }
 
 //==============================

@@ -35,4 +35,9 @@ extern double kB;
 extern double TEMPERATURE;
 extern double dt;
 
+//To turn on/off the stochastic force term
+//============================================
+extern bool STOCHASTIC_FORCE_ACTIN;    
+extern bool STOCHASTIC_FORCE_MYOSIN;
+
 #endif

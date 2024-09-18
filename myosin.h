@@ -35,6 +35,8 @@ class Myosin: public enable_shared_from_this<Myosin> {
         int num_myosin_nodes;
         vector<shared_ptr<Myosin_Node>> myosin_nodes;
 
+        vector<shared_ptr<Filament>> possible_filament_connections; //Actin filaments within range for possible actomyo connections
+
     public:
     //Constructor:
     //=======================
@@ -68,6 +70,12 @@ class Myosin: public enable_shared_from_this<Myosin> {
     //get myosin nodes
     void get_Myosin_Nodes_Vec(vector<shared_ptr<Myosin_Node>>& myosins);
 
+    //get possible actin filament connections
+    const vector<shared_ptr<Filament>>& get_Possible_Connections(){return possible_filament_connections;}
+
+    //empty out possible connections
+    void clear_Possible_Connections();
+
 
     //Functions
     //=======================
@@ -77,6 +85,12 @@ class Myosin: public enable_shared_from_this<Myosin> {
 
     //***Update node positions via Langevin eqn
     void update_Myosin_Node_Positions(int Ti);
+
+    //***Find neighboring actin filaments for possible connections
+    void find_Possible_FilConn(const vector<shared_ptr<Filament>>& actinfils, double connection_radius);
+
+    //***Form actomyosin connections
+    void formActomyoConnections(int Ti, double connection_radius);
 
     //***Functions for VTK output
     void update_Myosin_Node_VTK_Indices(int& id);

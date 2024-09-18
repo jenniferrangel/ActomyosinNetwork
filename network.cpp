@@ -420,6 +420,32 @@ void Network::sound_Off_Neighbors(){
     return;
 }
 
+void Network::sound_Off_Possible_Connections(int Ti){
+    cout << "POSSIBLE CONNECTIONS: " << endl;
+    cout << "***********************************************" << endl;
+
+    cout << "Timestep = " << Ti << endl;
+
+    shared_ptr<Myosin> current;
+    // vector<shared_ptr<Myosin_Node>> myosinNodes;
+    vector<shared_ptr<Filament>> actinfilaments;
+
+    for(unsigned int i = 0; i < myosins.size(); i++){
+        current = myosins.at(i);
+        cout << "Myosin mini-filament #: " << current->get_Myosin_Num() << endl;
+        cout << "My neighboring actin filaments are: " << endl;
+        actinfilaments = current -> get_Possible_Connections();
+        if(actinfilaments.empty()){
+            cout << "NO CONNECTIONS" << endl;
+        }
+        else{
+            for(unsigned int j = 0; j < actinfilaments.size(); j++){
+                cout << actinfilaments.at(j)->get_Filament_Num() << endl;
+            }
+        }
+    }
+}
+
 //***Calculates forces acting on each filament node***//
 void Network::calculate_New_Forces(int Ti){
    //#pragma omp parallel for schedule(static,1)
@@ -465,7 +491,59 @@ void Network::update_Positions(int Ti){
     return;
 }
 
-//***Functions for VTK output****//
+//***Myosin searches through each filament to find filaments within reach that it can form connections with***//
+void Network::find_Possible_Connections(int Ti){
+    double conn_radius = ACTIN_MYO_CONNECT_RADIUS;
+    cout << "connection radius = " << conn_radius << endl;
+
+    //#pragma omp parallel for schedule(static,1)
+    for(unsigned int i = 0; i < myosins.size(); i++){
+        cout << "MYOSIN SEARCHING FOR NEIGHBORING ACTIN FILAMENTS..." << endl;
+        cout << "***********************************************" << endl;
+        myosins.at(i)->find_Possible_FilConn(filaments, conn_radius);
+    }
+    return;
+}
+
+void Network::update_Possible_Connections(int Ti){
+    double conn_radius = ACTIN_MYO_CONNECT_RADIUS;
+    cout << "connection radius = " << conn_radius << endl;
+
+    //empty out old connections
+    for(unsigned int i = 0; i < myosins.size(); i++){
+        myosins.at(i)->clear_Possible_Connections();
+    }
+
+    //find new ones
+    //#pragma omp parallel for schedule(static,1)
+    for(unsigned int j = 0; j < myosins.size(); j++){
+        cout << "UPDATING..MYOSIN SEARCHING FOR NEIGHBORING ACTIN FILAMENTS..." << endl;
+        cout << "***********************************************" << endl;
+        myosins.at(j)->find_Possible_FilConn(filaments, conn_radius);
+    }
+
+    return;
+}
+
+//***Form actomyosin connections***//
+void Network::formActomyoConnections(int Ti){
+    //Important notes:
+    //1)Myosin will ALWAYS move towards barbed end
+    //2)The 2 myosin heads CANNOT bind to the same actin
+
+    double conn_radius = ACTIN_MYO_CONNECT_RADIUS;
+    cout << "connection radius = " << conn_radius << endl;
+
+    for(unsigned int i = 0; i < myosins.size(); i++){
+        cout << "FORMING ACTOMYOSIN CONNECTIONS..." << endl;
+        cout << "***********************************************" << endl;
+        myosins.at(i)->formActomyoConnections(Ti, conn_radius);
+    }
+    
+    return;
+}
+
+//***Functions for VTK output***//
 //Actin Filaments
 void Network::print_VTK_File(ofstream& ofs){
 

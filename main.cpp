@@ -36,7 +36,7 @@ using namespace std;
 double ACTIN_SPRING_EQUI_LEN = 0.2;     //(microns) actin linear spring equilibrium length
 double K_LINEAR_STIFF_ACTIN = 150.0;     //(pN) The actin linear spring coefficient
 //parameters for bending springs:
-double K_BEND_STIFF_ACTIN = 0.0414;     //(pN*micron^2) The actin bending coefficientat every node triplet
+double K_BEND_STIFF_ACTIN = 0.207;//0.0414;     //(pN*micron^2) The actin bending coefficientat every node triplet
 double THETA_EQUI_ANGLE = 3.14159265;  // The equilibrium angle which is pi
 double ACTIN_DRAG_COEFF = 0.216;        //(pN s/micron)
 double VISCOSITY_CYTOPLASM = 0.301;     //(Pa s OR pN s/micron)
@@ -58,6 +58,11 @@ double ACTIN_MYO_CONN_SPRING_EQUI_LEN = 0.0;  //(microns) equilibrium length of 
 double kB = 1.38064852e-5;              //Boltzmann Const. (micron pN/K)
 double TEMPERATURE = 300.0;             //Kelvin
 double dt = 0.0005;                     //time step (seconds)
+
+//To turn on/off the stochastic force term
+//============================================
+bool STOCHASTIC_FORCE_ACTIN = true;    
+bool STOCHASTIC_FORCE_MYOSIN = true;
 
 bool PREDEFINED_INITIAL_NODES = true;
 int PRINT_VTKS = true; // ./batchGenerator -par -PRINT <1 or 0>
@@ -169,7 +174,7 @@ int main(int argc, char* argv[]){
     //Start the loop
     //*****************************************************
     int Ti = 0;
-    int final_time = 4;
+    int final_time = 301;//4;//12;
 
     while(Ti < final_time){
         cout << "Entered while loop" << endl;
@@ -298,6 +303,29 @@ int main(int argc, char* argv[]){
         }
 
         //This allows file '0' i.e. at time = 0 to have the info for the initial condition
+        
+        //Possible actin-myosin connections
+        //*****************************************************
+        //Myosin update/look for actin filaments within connection radius. At t=0, these will be the initial pool of actin filaments within range
+        if(Ti == 0){
+            cout << "Finding initial actin filaments within range of myosin mini-filaments!!!" << endl;
+            actomyosin_Network.find_Possible_Connections(Ti);
+        }
+
+        //NEED TO: FIGURE OUT EVERY HOW MANY TIME STEPS TO UPDATE ADHESIONS!!!
+        if(Ti !=0 && Ti%10 == 0){
+            cout << "UPDATING neighboring/possible actin filaments within range" << endl;
+            actomyosin_Network.update_Possible_Connections(Ti);
+        }
+
+        actomyosin_Network.sound_Off_Possible_Connections(Ti);
+
+        //Forming actomyosin connections
+        //*****************************************************
+        if (Ti > 0){
+            cout << "Forming actomyosin connections..." << endl;
+            actomyosin_Network.formActomyoConnections(Ti);
+        }
 
         //Calculate the forces on filament nodes
         //*****************************************************

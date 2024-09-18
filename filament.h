@@ -94,10 +94,12 @@ class Filament: public enable_shared_from_this<Filament> {
 
     //get actin nodes
     void get_Actin_Nodes_Vec(vector<shared_ptr<Actin_Node>>& actins);
+    
+    //NOT USED--- get actin nodes-added so myosins can have access to these nodes
+    // const vector<shared_ptr<Actin_Node>>& get_Actin_Nodes(){return actin_nodes;}
 
     //add a new actin node to the node vector
     void add_Actin_Node_Vec(shared_ptr<Actin_Node> curr);
-
 
     //Functions
     //=======================

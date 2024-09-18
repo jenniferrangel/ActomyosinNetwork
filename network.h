@@ -60,12 +60,20 @@ class Network{
         //for double-checking purposes
         void sound_Off_All_Node_Info();
         void sound_Off_Neighbors();
+        void sound_Off_Possible_Connections(int Ti);
 
         //Calculate forces
         void calculate_New_Forces(int Ti);
 
         //Update node positions via Langevin equation
         void update_Positions(int Ti);
+
+        //Myosin searches through each filament to find filaments within reach that it can form connections with
+        void find_Possible_Connections(int Ti);
+        void update_Possible_Connections(int Ti);
+
+        //Form actomyosin connections
+        void formActomyoConnections(int Ti);
 
         //Printing and dataoutput functions
         //***Functions for VTK output
